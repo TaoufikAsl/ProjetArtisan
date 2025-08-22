@@ -1,0 +1,9 @@
+mat-card { padding: 16px; }
+.line {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px dashed #eee;
+}
+.actions { margin-top: 16px; display: flex; gap: 12px; }

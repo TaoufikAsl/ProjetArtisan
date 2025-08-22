@@ -1,0 +1,11 @@
+.container { max-width: 900px; margin: 24px auto; padding: 0 12px; }
+.list { display: grid; gap: 12px; }
+.item { padding-bottom: 6px; }
+.stars { vertical-align: middle; }
+.star { font-variation-settings: 'FILL' 1; font-size: 20px; }
+.star.off { opacity: .25; font-variation-settings: 'FILL' 0; }
+.prod { margin-left: 6px; }
+.comment { margin: 8px 0 4px; }
+.meta { color: rgba(0,0,0,.6); font-size: 13px; }
+.center { display:flex; justify-content:center; align-items:center; padding: 16px 0; }
+.error { color: #b00020; }

@@ -1,0 +1,64 @@
+<mat-toolbar color="primary" class="navbar">
+  <!-- Logo / Titre -->
+  <button mat-button routerLink="/" class="brand">
+    <mat-icon></mat-icon>
+    <span class="brand-text">Art Marketplace</span>
+  </button>
+
+  <span class="spacer"></span>
+
+  <!-- Liens visibles pour tout le monde -->
+  <a mat-button routerLink="/products">Catalogue</a>
+
+  <!-- Si connecté, on montre des liens par rôle -->
+  <ng-container *ngIf="isLoggedIn">
+    <ng-container *ngIf="role === 'Artisan'">
+      <a mat-button routerLink="/artisan/products">Mes produits</a>
+      <a mat-button routerLink="/artisan/orders">Commandes</a>
+      
+    </ng-container>
+
+    <ng-container *ngIf="role === 'Client'">
+      <a mat-button routerLink="/orders">Mes commandes</a>
+      <a mat-button routerLink="/cart">Panier</a>
+      <span class="cart-count" *ngIf="cart.count$ | async as count">{{ count }}</span>
+    </ng-container>
+    
+
+    <ng-container *ngIf="role === 'DeliveryPartner'">
+  <a mat-button routerLink="/deliveries">Mes livraisons</a>
+</ng-container>
+
+
+    <ng-container *ngIf="role === 'Admin'">
+      <a mat-button routerLink="/admin">Admin</a>
+    </ng-container>
+
+    <!-- Menu compte -->
+    <button mat-button [matMenuTriggerFor]="account">
+      <mat-icon></mat-icon>
+      {{ role || 'Compte' }}
+    </button>
+    
+
+    <mat-menu #account="matMenu">
+      <button mat-menu-item routerLink="/profile">
+        <mat-icon></mat-icon>
+        Profil
+      </button>
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="logout()">
+        <mat-icon></mat-icon>
+        Déconnexion
+      </button>
+    </mat-menu>
+  </ng-container>
+
+  <!-- Si pas connecté : Login / Register -->
+  <ng-container *ngIf="!isLoggedIn">
+    <a mat-stroked-button color="accent" routerLink="/login">Connexion</a>
+    <a mat-flat-button color="accent" routerLink="/register" class="ml-8">
+      Inscription
+    </a>
+  </ng-container>
+</mat-toolbar>

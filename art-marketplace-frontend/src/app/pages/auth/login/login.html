@@ -1,0 +1,29 @@
+<mat-card class="login-card">
+  <mat-card-title>Connexion</mat-card-title>
+
+  <form (ngSubmit)="onLogin()" [formGroup]="loginForm" novalidate>
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Nom d'utilisateur</mat-label>
+      <input matInput formControlName="username" required>
+      <mat-error *ngIf="u.hasError('required')">Champ requis</mat-error>
+      <mat-error *ngIf="u.hasError('minlength')">Minimum 3 caractères</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Mot de passe</mat-label>
+      <input matInput formControlName="password" type="password" required>
+      <mat-error *ngIf="p.hasError('required')">Champ requis</mat-error>
+      <mat-error *ngIf="p.hasError('minlength')">Minimum 3 caractères</mat-error>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" class="w-100" type="submit" [disabled]="loginForm.invalid || loading">
+      {{ loading ? 'Connexion...' : 'Se connecter' }}
+    </button>
+  </form>
+
+  <mat-divider class="my-2"></mat-divider>
+
+  <div class="mt-2">
+    <a routerLink="/register">Pas de compte ? Inscription</a>
+  </div>
+</mat-card>

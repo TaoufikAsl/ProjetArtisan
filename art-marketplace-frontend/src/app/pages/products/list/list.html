@@ -1,0 +1,22 @@
+<div class="wrapper">
+  <h2>Catalogue</h2>
+
+  <div class="center" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <p class="error" *ngIf="!loading && error">{{ error }}</p>
+
+  <div class="grid" *ngIf="!loading && !error">
+    <mat-card class="product" *ngFor="let p of products">
+      <mat-card-title>{{ p.title }}</mat-card-title>
+      <mat-card-content>
+        <p class="price">{{ p.price | currency:'EUR':'symbol':'1.2-2' }}</p>
+        <p class="desc">{{ p.description || '—' }}</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button color="primary" (click)="open(p)">Voir</button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

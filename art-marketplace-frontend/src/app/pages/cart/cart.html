@@ -1,0 +1,48 @@
+<mat-card class="container">
+  <mat-card-title>Mon panier</mat-card-title>
+
+  <div *ngIf="(cart.items$ | async) as items; else emptyTpl">
+    <div class="row head">
+      <div>Produit</div>
+      <div class="qty">Qté</div>
+      <div class="price">Prix</div>
+      <div class="total">Total</div>
+      <div></div>
+    </div>
+
+    <div class="row" *ngFor="let it of items; trackBy: trackById">
+      <div class="title">{{ it.title }}</div>
+      <div class="qty">
+        <input type="number" min="1" [ngModel]="it.qty"
+               (ngModelChange)="cart.updateQty(it.productId, $event)" />
+      </div>
+      <div class="price">{{ it.price | currency:'EUR':'symbol-narrow' }}</div>
+      <div class="total">{{ (it.price * it.qty) | currency:'EUR':'symbol-narrow' }}</div>
+      <div class="actions">
+        <button mat-icon-button (click)="cart.remove(it.productId)" aria-label="Supprimer">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <div class="footer" *ngIf="items.length">
+      <div class="left">
+        <button mat-stroked-button color="warn" (click)="cart.clear()">Vider</button>
+      </div>
+      <div class="right">
+        <div class="grand">
+          Total: <strong>{{ cart.total$ | async | currency:'EUR':'symbol-narrow' }}</strong>
+        </div>
+        <button mat-raised-button color="primary"
+                [disabled]="loading"
+                (click)="checkout()">
+          {{ loading ? 'Traitement...' : 'Valider la commande' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</mat-card>
+
+<ng-template #emptyTpl>
+  <p style="padding:16px">Votre panier est vide.</p>
+</ng-template>

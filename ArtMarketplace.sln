@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8F0D18E5-E5FC-4DE2-82B5-87E83AD1358F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArtMarketplace.Api", "src\ArtMarketplace.Api\ArtMarketplace.Api.csproj", "{9248B497-FC94-4F85-BFFF-B162DA2500CC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArtMarketplace.Domain", "src\ArtMarketplace.Domain\ArtMarketplace.Domain.csproj", "{6477817E-07CA-44CE-B601-9E68066D9390}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArtMarketplace.Business", "src\ArtMarketplace.Business\ArtMarketplace.Business.csproj", "{E8EB29FC-B7D5-49FA-B63D-B186F1B2FE03}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArtMarketplace.Data", "src\ArtMarketplace.Data\ArtMarketplace.Data.csproj", "{FA135253-AE73-40F2-B294-C29EC6CC8CF9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9248B497-FC94-4F85-BFFF-B162DA2500CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9248B497-FC94-4F85-BFFF-B162DA2500CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9248B497-FC94-4F85-BFFF-B162DA2500CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9248B497-FC94-4F85-BFFF-B162DA2500CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6477817E-07CA-44CE-B601-9E68066D9390}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6477817E-07CA-44CE-B601-9E68066D9390}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6477817E-07CA-44CE-B601-9E68066D9390}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6477817E-07CA-44CE-B601-9E68066D9390}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8EB29FC-B7D5-49FA-B63D-B186F1B2FE03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8EB29FC-B7D5-49FA-B63D-B186F1B2FE03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8EB29FC-B7D5-49FA-B63D-B186F1B2FE03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8EB29FC-B7D5-49FA-B63D-B186F1B2FE03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA135253-AE73-40F2-B294-C29EC6CC8CF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA135253-AE73-40F2-B294-C29EC6CC8CF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA135253-AE73-40F2-B294-C29EC6CC8CF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA135253-AE73-40F2-B294-C29EC6CC8CF9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9248B497-FC94-4F85-BFFF-B162DA2500CC} = {8F0D18E5-E5FC-4DE2-82B5-87E83AD1358F}
+		{6477817E-07CA-44CE-B601-9E68066D9390} = {8F0D18E5-E5FC-4DE2-82B5-87E83AD1358F}
+		{E8EB29FC-B7D5-49FA-B63D-B186F1B2FE03} = {8F0D18E5-E5FC-4DE2-82B5-87E83AD1358F}
+		{FA135253-AE73-40F2-B294-C29EC6CC8CF9} = {8F0D18E5-E5FC-4DE2-82B5-87E83AD1358F}
+	EndGlobalSection
+EndGlobal

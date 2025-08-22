@@ -1,0 +1,24 @@
+<div class="container">
+  <div class="header">
+    <h2>Mes produits</h2>
+    <a mat-raised-button color="primary" [routerLink]="['/artisan/products/new']">Nouveau produit</a>
+  </div>
+
+  <p *ngIf="loading">Chargement…</p>
+  <p *ngIf="!loading && error">{{ error }}</p>
+  <p *ngIf="!loading && !error && products.length === 0">Aucun produit.</p>
+
+  <div class="grid" *ngIf="!loading && !error && products.length">
+    <mat-card class="card" *ngFor="let p of products">
+      <mat-card-title>{{ p.title }}</mat-card-title>
+      <mat-card-content>
+        <p class="price">{{ p.price | currency:'EUR':'symbol-narrow' }}</p>
+        <p class="desc">{{ p.description || '—' }}</p>
+      </mat-card-content>
+      <mat-card-actions>
+        <a mat-button [routerLink]="['/artisan/products', p.id, 'edit']">Modifier</a>
+        <button mat-button color="warn" (click)="remove(p)">Supprimer</button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

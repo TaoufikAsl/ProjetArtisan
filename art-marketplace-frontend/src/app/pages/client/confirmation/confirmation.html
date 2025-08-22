@@ -1,0 +1,24 @@
+<mat-card *ngIf="summary; else noData">
+  <h2>Merci pour votre commande !</h2>
+  <p>Nombre d’articles : <b>{{ summary.count }}</b></p>
+  <p>Total payé : <b>{{ summary.total | currency:'EUR':'symbol-narrow' }}</b></p>
+
+  <h3>Détails</h3>
+  <div class="line" *ngFor="let it of summary.items">
+    <span>{{ it.title }}</span>
+    <span>x{{ it.qty }}</span>
+    <span>{{ (it.price * it.qty) | currency:'EUR':'symbol-narrow' }}</span>
+  </div>
+
+  <div class="actions">
+    <a mat-stroked-button routerLink="/products">Continuer mes achats</a>
+    <a mat-raised-button color="primary" routerLink="/orders">Voir mes commandes</a>
+  </div>
+</mat-card>
+
+<ng-template #noData>
+  <mat-card>
+    <h2>Aucune commande récente</h2>
+    <a mat-raised-button color="primary" routerLink="/products">Découvrir les produits</a>
+  </mat-card>
+</ng-template>

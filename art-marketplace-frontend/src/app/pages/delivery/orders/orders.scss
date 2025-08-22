@@ -1,0 +1,4 @@
+mat-card { padding: 16px; }
+.row { display: grid; grid-template-columns: 80px 1fr 1fr 140px auto; gap: 12px; padding: 8px 0; border-bottom: 1px solid #eee; }
+.row.head { font-weight: 600; }
+.actions { display: flex; gap: 6px; }

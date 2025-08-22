@@ -1,0 +1,35 @@
+<mat-card class="wrap">
+  <h2>{{ id ? 'Modifier un produit' : 'Nouveau produit' }}</h2>
+
+  <form (ngSubmit)="save()" [formGroup]="form" novalidate>
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Titre</mat-label>
+      <input matInput formControlName="title" required>
+      <mat-error *ngIf="form.controls.title.hasError('required')">Requis</mat-error>
+      <mat-error *ngIf="form.controls.title.hasError('minlength')">Min 2 caractères</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Description</mat-label>
+      <textarea matInput formControlName="description" rows="3"></textarea>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Prix (€)</mat-label>
+      <input matInput type="number" step="0.01" formControlName="price" required>
+      <mat-error *ngIf="form.controls.price.hasError('required')">Requis</mat-error>
+      <mat-error *ngIf="form.controls.price.hasError('min')">Doit être > 0</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Image (URL)</mat-label>
+      <input matInput formControlName="imageUrl">
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" class="w-100" type="submit" [disabled]="form.invalid || loading">
+      {{ loading ? 'Enregistrement...' : (id ? 'Mettre à jour' : 'Créer') }}
+    </button>
+  </form>
+
+  <div class="mt"><a routerLink="/artisan/products">← Retour</a></div>
+</mat-card>

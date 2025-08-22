@@ -1,0 +1,42 @@
+<mat-card>
+  <h2>Administration — Utilisateurs</h2>
+
+  <form [formGroup]="form" class="row">
+    <mat-form-field appearance="outline">
+      <mat-label>Username</mat-label>
+      <input matInput formControlName="username" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Password</mat-label>
+      <input matInput type="password" formControlName="password" />
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Rôle</mat-label>
+      <mat-select formControlName="role">
+        <mat-option value="Client">Client</mat-option>
+        <mat-option value="Artisan">Artisan</mat-option>
+        <mat-option value="DeliveryPartner">Delivery Partner</mat-option>
+        <mat-option value="Admin">Admin</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" (click)="create()" [disabled]="loading">Créer</button>
+  </form>
+
+  <h3>Utilisateurs ({{ users.length }})</h3>
+  <div class="table">
+    <div class="head">
+      <div>Id</div><div>Username</div><div>Role</div><div>Actions</div>
+    </div>
+    <div class="row" *ngFor="let u of users">
+      <div>{{u.id}}</div>
+      <div>{{u.username}}</div>
+      <div>{{u.role}}</div>
+      <div class="actions">
+        <button mat-stroked-button color="warn" (click)="remove(u)">Supprimer</button>
+      </div>
+    </div>
+  </div>
+</mat-card>

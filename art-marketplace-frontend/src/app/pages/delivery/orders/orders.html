@@ -1,0 +1,33 @@
+<mat-card>
+  <h2>Livraisons à prendre</h2>
+  <div *ngIf="available.length; else noneAvail">
+    <div class="row head"><div>#</div><div>Produit</div><div>Artisan</div><div>Date</div><div></div></div>
+    <div class="row" *ngFor="let o of available">
+      <div>{{o.id}}</div>
+      <div>{{o.product?.title}}</div>
+      <div>{{o.artisan?.username || o.artisanId}}</div>
+      <div>{{o.orderDate | date:'short'}}</div>
+      <div><button mat-stroked-button color="primary" (click)="assign(o.id)">Prendre</button></div>
+    </div>
+  </div>
+  <ng-template #noneAvail><p>Aucune course disponible.</p></ng-template>
+</mat-card>
+
+<mat-card style="margin-top:16px">
+  <h2>Mes livraisons</h2>
+  <div *ngIf="mine.length; else noneMine">
+    <div class="row head"><div>#</div><div>Produit</div><div>Client</div><div>Statut</div><div>Actions</div></div>
+    <div class="row" *ngFor="let o of mine">
+      <div>{{o.id}}</div>
+      <div>{{o.product?.title}}</div>
+      <div>{{o.client?.username || o.clientId}}</div>
+      <div>{{o.status}}</div>
+      <div class="actions">
+        <button mat-button (click)="update(o.id,'PickedUp')">PickedUp</button>
+        <button mat-button (click)="update(o.id,'InTransit')">InTransit</button>
+        <button mat-raised-button color="primary" (click)="update(o.id,'Delivered')">Delivered</button>
+      </div>
+    </div>
+  </div>
+  <ng-template #noneMine><p>Aucune commande assignée.</p></ng-template>
+</mat-card>

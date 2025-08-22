@@ -1,0 +1,17 @@
+<div class="container">
+  <h2>Mes commandes</h2>
+  <p *ngIf="loading">Chargement…</p>
+  <p *ngIf="!loading && error">{{ error }}</p>
+  <p *ngIf="!loading && !error && orders.length === 0">Aucune commande.</p>
+
+  <div class="list" *ngIf="!loading && !error && orders.length">
+    <mat-card *ngFor="let o of orders" class="item">
+      <mat-card-title>#{{ o.id }} — {{ o.status }}</mat-card-title>
+      <mat-card-content>
+        <p>Produit: {{ o.productId }}</p>
+        <p>Artisan: {{ o.artisanId }}</p>
+        <p>Date: {{ o.orderDate | date:'short' }}</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

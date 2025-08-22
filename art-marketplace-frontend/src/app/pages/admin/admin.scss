@@ -1,0 +1,14 @@
+mat-card { padding: 16px; }
+form.row {
+  display: grid;
+  grid-template-columns: 2fr 2fr 2fr auto;
+  gap: 12px; align-items: end; margin-bottom: 16px;
+}
+.table { display: grid; gap: 6px; }
+.table .head, .table .row {
+  display: grid;
+  grid-template-columns: 80px 1fr 200px 160px; /* ⬅️ 4 colonnes */
+  gap: 12px; padding: 8px 0; border-bottom: 1px solid #eee;
+}
+.table .head { font-weight: 600; }
+.actions { display: flex; gap: 8px; }

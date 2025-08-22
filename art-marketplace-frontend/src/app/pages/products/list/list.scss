@@ -1,0 +1,11 @@
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.card { overflow: hidden; }
+.thumb {
+  width: 100%;
+  aspect-ratio: 4 / 3;      /* recadre proprement */
+  object-fit: cover;         /* remplit sans déformer */
+  display: block;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.price { font-weight: 600; }
+.desc { color: rgba(0,0,0,.65); }

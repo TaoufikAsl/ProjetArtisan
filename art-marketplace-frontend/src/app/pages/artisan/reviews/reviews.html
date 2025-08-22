@@ -1,0 +1,39 @@
+<div class="container">
+  <h2>Mes avis</h2>
+
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <ng-container *ngIf="reviews$ | async as reviews; else loadingTpl">
+    <p *ngIf="reviews && reviews.length === 0 && !error">Aucun avis pour l’instant.</p>
+
+    <div class="list" *ngIf="reviews && reviews.length > 0">
+      <mat-card class="item" *ngFor="let r of reviews">
+        <mat-card-title>
+          <span class="stars" aria-label="note">
+            <ng-container *ngFor="let s of [1,2,3,4,5]">
+              <mat-icon class="star" [class.off]="s > r.rating">star</mat-icon>
+            </ng-container>
+          </span>
+          <span class="prod">
+            • <a [routerLink]="['/products', r.productId]">
+              {{ r.productTitle || ('Produit #' + r.productId) }}
+            </a>
+          </span>
+        </mat-card-title>
+
+        <mat-card-content>
+          <p class="comment">{{ r.comment || '—' }}</p>
+          <p class="meta">
+            Client #{{ r.clientId }} •
+            {{ r.createdAt | date:'short' }}
+          </p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </ng-container>
+
+  <ng-template #loadingTpl>
+    <div class="center"><mat-spinner diameter="36"></mat-spinner></div>
+  </ng-template>
+</div>
+

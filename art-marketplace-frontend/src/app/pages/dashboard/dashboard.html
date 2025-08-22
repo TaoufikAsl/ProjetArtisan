@@ -1,0 +1,90 @@
+<mat-card class="dash-card">
+  <h2>Bienvenue {{ username || 'utilisateur' }} 👋</h2>
+  <p>Rôle : <strong>{{ role || '—' }}</strong></p>
+</mat-card>
+
+<!-- Artisan -->
+<ng-container *ngIf="role === 'Artisan'">
+  <mat-card class="block" aria-labelledby="artisan-products-title">
+    <h3 id="artisan-products-title">Mes derniers produits</h3>
+
+    <p *ngIf="loading">Chargement…</p>
+    <p *ngIf="!loading && prodMine.length === 0">Aucun produit.</p>
+    <ul *ngIf="!loading && prodMine.length">
+      <li *ngFor="let p of prodMine">
+        {{ p.title }} — {{ p.price | currency:'EUR':'symbol-narrow' }}
+      </li>
+    </ul>
+
+    <div class="actions">
+      <a mat-stroked-button color="primary" routerLink="/artisan/products">Gérer mes produits</a>
+      <a mat-stroked-button routerLink="/artisan/orders">Commandes reçues</a>
+      <a mat-stroked-button routerLink="/artisan/reviews">Mes avis</a>
+      <a mat-stroked-button routerLink="/artisan/earnings">Mes revenus</a>
+    </div>
+  </mat-card>
+
+  <mat-card class="block" aria-labelledby="artisan-orders-title">
+    <h3 id="artisan-orders-title">Dernières commandes reçues</h3>
+    <p *ngIf="loading">Chargement…</p>
+    <p *ngIf="!loading && ordersArtisan.length === 0">Aucune commande.</p>
+    <ul *ngIf="!loading && ordersArtisan.length">
+      <li *ngFor="let o of ordersArtisan">
+        #{{ o.id }} — {{ o.status }} — produit {{ o.productId }}
+      </li>
+    </ul>
+  </mat-card>
+
+  <!-- Revenus (card rapide) -->
+  <mat-card class="block" *ngIf="earnings as e">
+    <h3>Mes revenus</h3>
+    <p>
+      Total livré :
+      <strong>{{ e.total | currency:'EUR':'symbol-narrow' }}</strong>
+      <span> ({{ e.ordersCount }} commande{{ e.ordersCount > 1 ? 's' : '' }})</span>
+    </p>
+    <div class="actions">
+      <a mat-stroked-button routerLink="/artisan/earnings">Voir le détail</a>
+    </div>
+  </mat-card>
+</ng-container>
+
+<!-- Client -->
+<ng-container *ngIf="role === 'Client'">
+  <mat-card class="block" aria-labelledby="client-orders-title">
+    <h3 id="client-orders-title">Mes dernières commandes</h3>
+
+    <p *ngIf="loading">Chargement…</p>
+    <p *ngIf="!loading && ordersClient.length === 0">Aucune commande.</p>
+    <ul *ngIf="!loading && ordersClient.length">
+      <li *ngFor="let o of ordersClient">
+        #{{ o.id }} — {{ o.status }} — produit {{ o.productId }}
+      </li>
+    </ul>
+
+    <div class="actions">
+      <a mat-stroked-button color="primary" routerLink="/products">Aller au catalogue</a>
+      <a mat-stroked-button routerLink="/orders">Voir toutes mes commandes</a>
+      <a mat-stroked-button routerLink="/cart">Mon panier</a>
+    </div>
+  </mat-card>
+</ng-container>
+
+<!-- Delivery Partner -->
+<ng-container *ngIf="role === 'DeliveryPartner'">
+  <mat-card class="block" aria-labelledby="dp-orders-title">
+    <h3 id="dp-orders-title">Mes livraisons</h3>
+
+    <p *ngIf="loading">Chargement…</p>
+    <p *ngIf="!loading && deliveries?.length === 0">Aucune livraison pour l’instant.</p>
+    <ul *ngIf="!loading && deliveries?.length">
+      <li *ngFor="let d of deliveries">
+        #{{ d.id }} — {{ d.status }} — produit {{ d.productId }}
+      </li>
+    </ul>
+
+    <div class="actions">
+      <a mat-stroked-button color="primary" routerLink="/delivery/orders">Gérer mes livraisons</a>
+    </div>
+  </mat-card>
+</ng-container>

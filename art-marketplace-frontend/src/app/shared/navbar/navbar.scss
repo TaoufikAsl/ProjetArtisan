@@ -1,0 +1,14 @@
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.brand {
+  gap: .5rem;
+  .brand-text { font-weight: 600; }
+}
+
+.spacer { flex: 1 1 auto; }
+
+.ml-8 { margin-left: .5rem; }

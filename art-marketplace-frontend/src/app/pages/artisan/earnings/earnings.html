@@ -1,0 +1,22 @@
+<mat-card class="container">
+  <h2>Mes revenus</h2>
+
+  <div class="filters">
+    <label>Du <input type="date" [(ngModel)]="from"></label>
+    <label>Au <input type="date" [(ngModel)]="to"></label>
+    <button mat-stroked-button (click)="load()" [disabled]="loading">Actualiser</button>
+  </div>
+
+  <div *ngIf="loading">Chargement…</div>
+  <p class="error" *ngIf="!loading && error">{{ error }}</p>
+
+  <div *ngIf="!loading && data">
+    <p>Total livré : <strong>{{ data.total | currency:'EUR':'symbol-narrow' }}</strong></p>
+    <p>Nombre de commandes : {{ data.ordersCount }}</p>
+    <p *ngIf="data.from || data.to">
+      Période :
+      <span *ngIf="data.from">du {{ data.from | date:'shortDate' }}</span>
+      <span *ngIf="data.to">au {{ data.to | date:'shortDate' }}</span>
+    </p>
+  </div>
+</mat-card>

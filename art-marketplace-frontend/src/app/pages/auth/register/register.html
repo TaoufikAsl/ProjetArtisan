@@ -1,0 +1,40 @@
+<mat-card class="register-card">
+  <mat-card-title>Inscription</mat-card-title>
+
+  <form (ngSubmit)="onRegister()" [formGroup]="registerForm" novalidate>
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Nom d'utilisateur</mat-label>
+      <input matInput formControlName="username" required>
+      <mat-error *ngIf="u.hasError('required')">Champ requis</mat-error>
+      <mat-error *ngIf="u.hasError('minlength')">Minimum 3 caractères</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Mot de passe</mat-label>
+      <input matInput formControlName="password" type="password" required>
+      <mat-error *ngIf="p.hasError('required')">Champ requis</mat-error>
+      <mat-error *ngIf="p.hasError('minlength')">Minimum 3 caractères</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="w-100">
+      <mat-label>Rôle</mat-label>
+      <mat-select formControlName="role" required>
+        <mat-option value="Client">Client</mat-option>
+        <mat-option value="Artisan">Artisan</mat-option>
+        <mat-option value="DeliveryPartner">Delivery Partner</mat-option>
+        <mat-option value="Admin">Admin</mat-option>
+      </mat-select>
+      <mat-error *ngIf="r.hasError('required')">Sélectionne un rôle</mat-error>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" class="w-100" type="submit" [disabled]="registerForm.invalid || loading">
+      {{ loading ? 'Inscription...' : 'S’inscrire' }}
+    </button>
+  </form>
+
+  <mat-divider class="my-2"></mat-divider>
+
+  <div class="mt-2">
+    <a routerLink="/login">Déjà un compte ? Connexion</a>
+  </div>
+</mat-card>

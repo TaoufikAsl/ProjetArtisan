@@ -1,0 +1,17 @@
+# Angular (tous projets)
+**/node_modules/
+**/dist/
+**/.angular/
+
+# .NET
+BackEnd/**/bin/
+BackEnd/**/obj/
+
+# VS caches (racine + sous-dossiers)
+.vs/
+BackEnd/**/.vs/
+
+# Divers
+*.log
+.DS_Store
+Thumbs.db
