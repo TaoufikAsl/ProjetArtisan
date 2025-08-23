@@ -1,0 +1,37 @@
+<mat-card>
+  <h2>Modération — produits en attente</h2>
+
+  <div *ngIf="loading">Chargement…</div>
+  <p *ngIf="!loading && !list.length">Aucun produit à approuver.</p>
+
+  <div *ngIf="!loading && list.length">
+    <div class="row head">
+      <div class="col-img">Image</div>
+      <div>Titre</div>
+      <div>Artisan</div>
+      <div>Prix</div>
+      <div>Actions</div>
+    </div>
+
+    <div class="row" *ngFor="let p of list; trackBy: trackById">
+      <div class="col-img">
+        <img
+          [src]="p.imageUrl || 'assets/placeholder.png'"
+          [alt]="p.title"
+          width="64" height="64"
+          style="object-fit:cover;border-radius:8px;background:#f5f5f5;display:block"
+          loading="lazy"
+        />
+      </div>
+
+      <div>{{ p.title }}</div>
+      <div>#{{ p.artisanId }}</div>
+      <div>{{ p.price | currency:'EUR':'symbol-narrow' }}</div>
+
+      <div class="actions">
+        <button mat-stroked-button color="primary" (click)="approve(p)">Approuver</button>
+        <button mat-stroked-button color="warn" (click)="remove(p)">Supprimer</button>
+      </div>
+    </div>
+  </div>
+</mat-card>

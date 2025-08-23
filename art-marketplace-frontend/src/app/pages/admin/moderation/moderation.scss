@@ -1,0 +1,4 @@
+.row { display:grid; grid-template-columns: 84px 1fr 120px 120px 220px; gap:12px; align-items:center; padding:10px 0; border-bottom:1px solid #eee; }
+.row.head { font-weight:600; border-bottom:2px solid #e5e5e5; }
+.col-img { width:84px; }
+.actions { display:flex; gap:8px; justify-content:flex-start; }

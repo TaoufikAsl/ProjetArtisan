@@ -1,11 +1,15 @@
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
-.card { overflow: hidden; }
-.thumb {
-  width: 100%;
-  aspect-ratio: 4 / 3;      /* recadre proprement */
-  object-fit: cover;         /* remplit sans déformer */
-  display: block;
-  border-bottom: 1px solid rgba(0,0,0,.06);
+.filters { padding: 12px; margin-bottom: 12px; }
+.row { display: grid; grid-template-columns: 1fr 140px 140px 180px; gap: 12px; }
+.q { width: 100%; }
+.num { min-width: 120px; }
+.sort { min-width: 160px; }
+
+.grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
 }
-.price { font-weight: 600; }
-.desc { color: rgba(0,0,0,.65); }
+.p { padding: 12px; display: grid; gap: 8px; align-content: start; }
+.p img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; }
+.p .price { font-weight: 600; }
+.p .actions { display: flex; gap: 8px; }

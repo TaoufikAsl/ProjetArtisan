@@ -1,14 +1,11 @@
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
+.pending-link {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 10px; border: 1px solid #e6e8f0; border-radius: 999px;
+  background: #f7f8fb; text-decoration: none; color: inherit;
 }
-
-.brand {
-  gap: .5rem;
-  .brand-text { font-weight: 600; }
+.badge {
+  min-width: 20px; height: 20px; padding: 0 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; border-radius: 999px;
+  background: #1976d2; color: #fff;
 }
-
-.spacer { flex: 1 1 auto; }
-
-.ml-8 { margin-left: .5rem; }

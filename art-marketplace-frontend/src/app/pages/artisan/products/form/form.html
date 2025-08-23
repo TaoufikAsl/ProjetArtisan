@@ -1,35 +1,71 @@
-<mat-card class="wrap">
-  <h2>{{ id ? 'Modifier un produit' : 'Nouveau produit' }}</h2>
+<mat-card>
+  <h2>{{ isEdit ? 'Modifier un produit' : 'Nouveau produit' }}</h2>
 
-  <form (ngSubmit)="save()" [formGroup]="form" novalidate>
-    <mat-form-field appearance="outline" class="w-100">
+  <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <!-- Titre -->
+    <mat-form-field appearance="outline" class="w-full">
       <mat-label>Titre</mat-label>
-      <input matInput formControlName="title" required>
-      <mat-error *ngIf="form.controls.title.hasError('required')">Requis</mat-error>
-      <mat-error *ngIf="form.controls.title.hasError('minlength')">Min 2 caractères</mat-error>
+      <input matInput formControlName="title" />
+      <mat-error *ngIf="form.controls.title.hasError('required')">
+        Le titre est requis.
+      </mat-error>
+      <mat-error *ngIf="form.controls.title.hasError('minlength')">
+        Minimum 2 caractères.
+      </mat-error>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="w-100">
+    <!-- Description -->
+    <mat-form-field appearance="outline" class="w-full">
       <mat-label>Description</mat-label>
-      <textarea matInput formControlName="description" rows="3"></textarea>
+      <textarea matInput rows="4" formControlName="description"></textarea>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="w-100">
-      <mat-label>Prix (€)</mat-label>
-      <input matInput type="number" step="0.01" formControlName="price" required>
-      <mat-error *ngIf="form.controls.price.hasError('required')">Requis</mat-error>
-      <mat-error *ngIf="form.controls.price.hasError('min')">Doit être > 0</mat-error>
+    <!-- Prix -->
+    <mat-form-field appearance="outline">
+      <mat-label>Prix</mat-label>
+      <input matInput type="number" step="0.01" formControlName="price" />
+      <mat-error *ngIf="form.controls.price.hasError('required')">
+        Le prix est requis.
+      </mat-error>
+      <mat-error *ngIf="form.controls.price.hasError('min')">
+        Le prix doit être &ge; 0,01.
+      </mat-error>
     </mat-form-field>
 
-    <mat-form-field appearance="outline" class="w-100">
-      <mat-label>Image (URL)</mat-label>
-      <input matInput formControlName="imageUrl">
-    </mat-form-field>
+    <!-- Image -->
+    <div class="image-field">
+      <label class="block mb-2">Image (jpg, jpeg, png, webp — max 5&nbsp;Mo)</label>
+      <input type="file" accept="image/*" (change)="onFileChange($event)" />
 
-    <button mat-raised-button color="primary" class="w-100" type="submit" [disabled]="form.invalid || loading">
-      {{ loading ? 'Enregistrement...' : (id ? 'Mettre à jour' : 'Créer') }}
-    </button>
+      <!-- Preview si nouvelle image sélectionnée -->
+      <div class="preview" *ngIf="previewUrl">
+        <img [src]="previewUrl" alt="Aperçu de l'image" />
+      </div>
+
+      <!-- Image existante (mode édition, si pas de nouvelle sélection) -->
+      <div class="preview" *ngIf="!previewUrl && form.value.imageUrl">
+        <img [src]="form.value.imageUrl!" alt="Image actuelle" />
+        <div class="hint">Image actuelle</div>
+      </div>
+
+      <div class="row-actions" *ngIf="previewUrl || form.value.imageUrl">
+        <button mat-stroked-button color="warn" type="button" (click)="clearImage()">
+          Retirer l'image
+        </button>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button
+        mat-raised-button
+        color="primary"
+        type="submit"
+        [disabled]="loading || form.invalid"
+      >
+        {{ loading ? 'Enregistrement…' : 'Enregistrer' }}
+      </button>
+      <a mat-stroked-button routerLink="/artisan/products">Annuler</a>
+    </div>
   </form>
-
-  <div class="mt"><a routerLink="/artisan/products">← Retour</a></div>
 </mat-card>

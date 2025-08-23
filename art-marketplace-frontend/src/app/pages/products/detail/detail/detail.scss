@@ -1,4 +1,20 @@
-.wrapper { max-width: 900px; margin: 24px auto; padding: 0 12px; }
-.center { display: flex; justify-content: center; margin: 24px 0; }
-.error { color: #c62828; }
-.price { font-weight: 600; margin: 6px 0 12px; }
+.product-card {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.hero {
+  width: 100%;
+  max-width: 560px;     /* largeur max */
+  max-height: 360px;    /* hauteur max */
+  object-fit: contain;  /* pas de découpe; on “contient” l’image */
+  display: block;
+  border-radius: 12px;
+  background: #f5f5f5;  /* fond neutre autour si ratio différent */
+  margin-bottom: 12px;
+}
+
+/* petit plus responsive */
+@media (max-width: 640px) {
+  .hero { max-width: 100%; max-height: 280px; }
+}

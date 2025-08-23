@@ -16,4 +16,6 @@ public class Product
 
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
 
+    public bool IsApproved { get; set; } = false;
+
 }

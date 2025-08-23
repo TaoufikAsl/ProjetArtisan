@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using ArtMarketplace.Api.Services;
 using Microsoft.OpenApi.Models;
+using System.Linq;                 
+using Microsoft.AspNetCore.Http;   
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,17 +40,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = issuer,
             ValidAudience = audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
-            ClockSkew = TimeSpan.Zero,              // expiration
-            RoleClaimType = ClaimTypes.Role,        // pour [Authorize(Roles="...")]
-            NameClaimType = ClaimTypes.Name         // User.Identity.Name
+            ClockSkew = TimeSpan.Zero,
+            RoleClaimType = ClaimTypes.Role,
+            NameClaimType = ClaimTypes.Name
         };
     });
 
-builder.Services.AddAuthorization();            
+builder.Services.AddAuthorization();
 
+// Swagger (avec JWT + upload)
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "ArtMarketplace.Api", Version = "v1" });
+
+    // JWT dans Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -56,15 +61,26 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Ex: Bearer eyJ..."
+        Description = "Exemple: Bearer eyJ..."
     });
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
-            new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } },
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id   = "Bearer"
+                }
+            },
             Array.Empty<string>()
         }
     });
+
+    c.MapType<IFormFile>(() => new OpenApiSchema { Type = "string", Format = "binary" });
+
+    c.ResolveConflictingActions(apiDescriptions => apiDescriptions.First());
 });
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -72,11 +88,14 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
-
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+
+// servir /wwwroot (images uploads)
+app.UseStaticFiles();
+
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();

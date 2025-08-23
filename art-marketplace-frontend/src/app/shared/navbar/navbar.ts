@@ -1,29 +1,23 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
-import { NgIf } from '@angular/common';
-import { AsyncPipe } from '@angular/common';
-// Angular Material
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
-
+import { MatBadgeModule } from '@angular/material/badge';
 import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
+import { AdminProductsService } from '../../services/admin-products.service';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
   imports: [
-    NgIf,
-    RouterLink,
-    MatToolbarModule,
-    MatButtonModule,
-    MatIconModule,
-    MatMenuModule,
-    MatDividerModule,
-    AsyncPipe
+    CommonModule, RouterLink,
+    MatToolbarModule, MatButtonModule, MatIconModule,
+    MatMenuModule, MatDividerModule, MatBadgeModule
   ],
   templateUrl: './navbar.html',
   styleUrls: ['./navbar.scss'],
@@ -31,27 +25,32 @@ import { CartService } from '../../services/cart.service';
 export class NavbarComponent implements OnInit {
   private auth = inject(AuthService);
   private router = inject(Router);
+  private adminProducts = inject(AdminProductsService);
   public cart = inject(CartService);
-
-
 
   isLoggedIn = false;
   role: string | null = null;
+  pendingCount = 0;
 
   ngOnInit(): void {
-    // Lis l’état au chargement
-    this.refreshState();
-    this.auth.state$.subscribe(() => this.refreshState());
-  }
+    this.auth.state$.subscribe(loggedIn => {
+      this.isLoggedIn = loggedIn;
+      this.role = this.auth.getRole();
 
-  private refreshState() {
-    this.isLoggedIn = this.auth.isAuthenticated();
-    this.role = this.auth.getRole();
+      if (this.role === 'Admin') {
+        this.adminProducts.pendingCount$.subscribe(n => this.pendingCount = n);
+        this.adminProducts.fetchPendingCount().subscribe({
+          next: r => this.adminProducts.pendingCount$.next(r.count ?? 0),
+          error: () => this.adminProducts.pendingCount$.next(0)
+        });
+      } else {
+        this.pendingCount = 0;
+      }
+    });
   }
 
   logout() {
     this.auth.logout();
-    this.refreshState();
     this.router.navigate(['/login']);
   }
 }

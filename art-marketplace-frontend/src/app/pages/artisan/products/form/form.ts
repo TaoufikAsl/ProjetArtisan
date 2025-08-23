@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { finalize } from 'rxjs/operators';
+import { of, switchMap } from 'rxjs';
 import { ProductService, Product } from '../../../../services/product.service';
 
 @Component({
@@ -31,6 +32,13 @@ export class ArtisanProductFormComponent implements OnInit {
   id: number | null = null;
   loading = false;
 
+  // Image
+  selectedFile: File | null = null;
+  previewUrl: string | null = null;
+
+  // ✅ Getter utilisé par le template
+  get isEdit(): boolean { return this.id !== null; }
+
   form = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(2)]],
     description: [''],
@@ -47,52 +55,67 @@ export class ArtisanProductFormComponent implements OnInit {
       this.api.get(this.id)
         .pipe(finalize(() => { this.loading = false; this.cdr.markForCheck(); }))
         .subscribe({
-          next: (p: Product) => this.form.patchValue({
-            title: p.title,
-            description: p.description || '',
-            price: p.price,
-            imageUrl: p.imageUrl || ''
-          }),
+          next: (p: Product) => {
+            this.form.patchValue({
+              title: p.title,
+              description: p.description || '',
+              price: p.price,
+              imageUrl: p.imageUrl || ''
+            });
+            this.previewUrl = p.imageUrl || null;
+          },
           error: () => this.snack.open('Produit introuvable', '', { duration: 2000 })
         });
     }
   }
 
-   save() {
+  onFileChange(ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    if (!input.files || !input.files.length) { this.selectedFile = null; return; }
+    const f = input.files[0];
+    this.selectedFile = f;
+
+    const reader = new FileReader();
+    reader.onload = () => this.previewUrl = reader.result as string;
+    reader.readAsDataURL(f);
+  }
+
+  clearImage() {
+    this.selectedFile = null;
+    this.previewUrl = null;
+    this.form.patchValue({ imageUrl: '' });
+  }
+
+  save() {
     if (this.form.invalid) return;
     this.loading = true;
 
-    // Correction 1: Typage explicite du payload
-    const payload: Partial<Product> = {
-      title: this.form.value.title || '',
-      description: this.form.value.description || '',
-      price: this.form.value.price || 0,
-      imageUrl: this.form.value.imageUrl || ''
-    };
+    const upload$ = this.selectedFile
+      ? this.api.uploadImage(this.selectedFile)
+      : of<{ url?: string } | null>(null);
 
-    // Correction 2: Gestion séparée des cas create/update
-    if (this.id) {
-      // Mode édition
-      this.api.update(this.id, payload)
-        .pipe(finalize(() => { this.loading = false; this.cdr.markForCheck(); }))
-        .subscribe({
-          next: () => {
-            this.snack.open('Modifié ✅', '', { duration: 1500 });
-            this.router.navigate(['/artisan/products']);
-          },
-          error: () => this.snack.open('Échec de sauvegarde', '', { duration: 2000 })
-        });
-    } else {
-      // Mode création
-      this.api.create(payload)
-        .pipe(finalize(() => { this.loading = false; this.cdr.markForCheck(); }))
-        .subscribe({
-          next: () => {
-            this.snack.open('Créé ✅', '', { duration: 1500 });
-            this.router.navigate(['/artisan/products']);
-          },
-          error: () => this.snack.open('Échec de sauvegarde', '', { duration: 2000 })
-        });
-    }
+    upload$.pipe(
+      switchMap(res => {
+        if (res?.url) this.form.patchValue({ imageUrl: res.url });
+
+        const payload: Partial<Product> = {
+          title: this.form.value.title || '',
+          description: this.form.value.description || '',
+          price: this.form.value.price || 0,
+          imageUrl: this.form.value.imageUrl || ''
+        };
+
+        return this.id
+          ? this.api.update(this.id, payload)
+          : this.api.create(payload);
+      }),
+      finalize(() => { this.loading = false; this.cdr.markForCheck(); })
+    ).subscribe({
+      next: () => {
+        this.snack.open(this.id ? 'Modifié ✅' : 'Créé ✅', '', { duration: 1500 });
+        this.router.navigate(['/artisan/products']);
+      },
+      error: () => this.snack.open('Échec de sauvegarde', '', { duration: 2000 })
+    });
   }
 }

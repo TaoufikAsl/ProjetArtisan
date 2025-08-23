@@ -1,7 +1,7 @@
 <mat-toolbar color="primary" class="navbar">
   <!-- Logo / Titre -->
   <button mat-button routerLink="/" class="brand">
-    <mat-icon></mat-icon>
+    <mat-icon>palette</mat-icon>
     <span class="brand-text">Art Marketplace</span>
   </button>
 
@@ -15,7 +15,6 @@
     <ng-container *ngIf="role === 'Artisan'">
       <a mat-button routerLink="/artisan/products">Mes produits</a>
       <a mat-button routerLink="/artisan/orders">Commandes</a>
-      
     </ng-container>
 
     <ng-container *ngIf="role === 'Client'">
@@ -23,32 +22,42 @@
       <a mat-button routerLink="/cart">Panier</a>
       <span class="cart-count" *ngIf="cart.count$ | async as count">{{ count }}</span>
     </ng-container>
-    
 
     <ng-container *ngIf="role === 'DeliveryPartner'">
-  <a mat-button routerLink="/deliveries">Mes livraisons</a>
-</ng-container>
-
+      <a mat-button routerLink="/deliveries">Mes livraisons</a>
+    </ng-container>
 
     <ng-container *ngIf="role === 'Admin'">
       <a mat-button routerLink="/admin">Admin</a>
+      
+      <!-- Badge corrigé -->
+      <a
+        mat-stroked-button
+        routerLink="/admin/products"
+        [matBadge]="pendingCount"
+        matBadgeColor="warn"
+        [matBadgeHidden]="pendingCount === 0"
+        class="pending-link"
+      >
+        <mat-icon>inventory_2</mat-icon>
+        <span>Produits en attente</span>
+      </a>
     </ng-container>
 
     <!-- Menu compte -->
     <button mat-button [matMenuTriggerFor]="account">
-      <mat-icon></mat-icon>
+      <mat-icon>account_circle</mat-icon>
       {{ role || 'Compte' }}
     </button>
-    
 
     <mat-menu #account="matMenu">
       <button mat-menu-item routerLink="/profile">
-        <mat-icon></mat-icon>
+        <mat-icon>person</mat-icon>
         Profil
       </button>
       <mat-divider></mat-divider>
       <button mat-menu-item (click)="logout()">
-        <mat-icon></mat-icon>
+        <mat-icon>logout</mat-icon>
         Déconnexion
       </button>
     </mat-menu>

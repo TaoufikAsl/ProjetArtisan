@@ -1,9 +1,43 @@
+<!-- Fiche produit -->
+<mat-card *ngIf="!loading && product as p" class="product-card">
+  <img
+    class="hero"
+  [src]="p.imageUrl || 'assets/placeholder.png'"
+  [alt]="p.title"
+  loading="lazy"
+  />
+
+  <mat-card-title>{{ p.title }}</mat-card-title>
+  <mat-card-subtitle class="price">
+    {{ p.price | currency:'EUR':'symbol-narrow' }}
+  </mat-card-subtitle>
+
+  <mat-card-content>
+    <p>{{ p.description || '—' }}</p>
+  </mat-card-content>
+
+  <mat-card-actions>
+    <button mat-button (click)="back()">Retour</button>
+
+
+
+    <button
+      mat-stroked-button
+      color="primary"
+      (click)="addToCart()"
+    >
+      Ajouter au panier
+    </button>
+  </mat-card-actions>
+</mat-card>
+
 <!-- Avis -->
 <mat-card class="reviews" *ngIf="!loading && product">
   <h3>Avis</h3>
 
   <ng-container *ngIf="reviews$ | async as reviews">
     <p *ngIf="reviews.length === 0">Aucun avis pour l’instant.</p>
+
     <ul *ngIf="reviews.length > 0">
       <li *ngFor="let r of reviews">
         ★ {{ r.rating }} — {{ r.comment || '—' }}
@@ -12,33 +46,17 @@
     </ul>
   </ng-container>
 
-  <mat-card-actions>
-  <button mat-button (click)="back()">Retour</button>
-
-  <!-- Afficher le bouton uniquement pour le rôle Client -->
-  <button
-    mat-raised-button
-    color="primary"
-    *ngIf="canOrder()"
-    (click)="order()">
-    Commander
-  </button>
-
-  <button mat-stroked-button color="primary" (click)="addToCart()">Ajouter au panier</button> <!-- Bouton pour ajouter au panier -->
-  
-
-
-</mat-card-actions>
-
-
-  <!-- Formulaire client -->
+  <!-- Formulaire d'avis (Client après livraison) -->
   <div *ngIf="canReview()" class="review-form">
     <h4>Laisser un avis</h4>
+
     <form (ngSubmit)="submitReview()" [formGroup]="reviewForm" novalidate>
       <mat-form-field appearance="outline" class="w-100">
         <mat-label>Note</mat-label>
         <mat-select formControlName="rating" required>
-          <mat-option *ngFor="let n of [5,4,3,2,1]" [value]="n">{{ n }}</mat-option>
+          <mat-option *ngFor="let n of [5,4,3,2,1]" [value]="n">
+            {{ n }}
+          </mat-option>
         </mat-select>
       </mat-form-field>
 
@@ -47,7 +65,13 @@
         <textarea matInput rows="3" formControlName="comment"></textarea>
       </mat-form-field>
 
-      <button mat-raised-button color="primary" class="w-100" type="submit" [disabled]="reviewForm.invalid || adding">
+      <button
+        mat-raised-button
+        color="primary"
+        class="w-100"
+        type="submit"
+        [disabled]="reviewForm.invalid || adding"
+      >
         {{ adding ? 'Envoi…' : 'Publier l’avis' }}
       </button>
     </form>

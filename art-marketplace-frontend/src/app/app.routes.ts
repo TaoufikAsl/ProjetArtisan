@@ -32,6 +32,15 @@ export const routes: Routes = [
   loadComponent: () => import('./pages/admin/admin').then(m => m.AdminComponent)
 },
 
+{
+  path: 'admin/products',
+  canActivate: [roleGuard],
+  data: { role: 'Admin' },
+  loadComponent: () => import('./pages/admin/moderation/moderation').then(m => m.AdminProductsModerationComponent)
+},
+
+
+
 
   //  Catalogue public 
   {

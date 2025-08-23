@@ -28,7 +28,7 @@ public class ReviewController : ControllerBase
         return Ok(list);
     }
 
-    // POST /api/review  {productId, rating, comment}
+    // POST /api/review  { productId, rating, comment }
     [Authorize(Roles = "Client")]
     [HttpPost]
     public async Task<ActionResult<Review>> Create([FromBody] CreateReviewDto dto, CancellationToken ct)
@@ -36,14 +36,25 @@ public class ReviewController : ControllerBase
         if (dto is null || dto.ProductId <= 0) return BadRequest("productId requis.");
         if (dto.Rating < 1 || dto.Rating > 5) return BadRequest("rating doit être entre 1 et 5.");
 
-        var product = await _ctx.Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == dto.ProductId, ct);
+        var product = await _ctx.Products.AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == dto.ProductId, ct);
         if (product == null) return NotFound("Produit introuvable.");
 
         var clientId = GetUserId();
         if (clientId is null) return Unauthorized();
 
-        // (optionnel) empêcher les doublons par client/produit
-        var already = await _ctx.Reviews.AnyAsync(r => r.ProductId == dto.ProductId && r.ClientId == clientId, ct);
+        // Client doit avoir commande LIVRÉE pour ce produit
+        var hasDeliveredOrder = await _ctx.Orders.AsNoTracking().AnyAsync(o =>
+            o.ProductId == dto.ProductId &&
+            o.ClientId == clientId.Value &&
+            o.Status == "Delivered", ct);
+
+        if (!hasDeliveredOrder)
+            return BadRequest("Vous pouvez noter un produit seulement après l'avoir reçu.");
+
+        // un avis par client/produit
+        var already = await _ctx.Reviews.AnyAsync(r =>
+            r.ProductId == dto.ProductId && r.ClientId == clientId.Value, ct);
         if (already) return BadRequest("Vous avez déjà laissé un avis pour ce produit.");
 
         var review = new Review
@@ -51,7 +62,8 @@ public class ReviewController : ControllerBase
             ProductId = dto.ProductId,
             ClientId = clientId.Value,
             Rating = dto.Rating,
-            Comment = dto.Comment?.Trim()
+            Comment = dto.Comment?.Trim(),
+            CreatedAt = DateTime.UtcNow 
         };
 
         _ctx.Reviews.Add(review);
@@ -59,6 +71,7 @@ public class ReviewController : ControllerBase
 
         return CreatedAtAction(nameof(ForProduct), new { productId = dto.ProductId }, review);
     }
+
 
     // GET /api/review/artisan
     [Authorize(Roles = "Artisan")]
