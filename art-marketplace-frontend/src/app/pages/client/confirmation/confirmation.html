@@ -1,8 +1,48 @@
 <mat-card *ngIf="summary; else noData">
   <h2>Merci pour votre commande !</h2>
 
-  <p>Nombre d’articles : <b>{{ summary!.count }}</b></p>
-  <p>Total payé : <b>{{ summary!.total | currency:'EUR':'symbol-narrow' }}</b></p>
+  <p>Nombre d'articles : <b>{{ summary!.count }}</b></p>
+  
+  <!--  Afficher les détails de livraison -->
+  <div class="payment-details">
+    <h3>
+      <mat-icon>receipt</mat-icon>
+      Récapitulatif de paiement
+    </h3>
+    
+    <div class="price-breakdown">
+      <div class="line">
+        <span>Sous-total articles :</span>
+        <span>{{ (summary!.total - (summary!.deliveryPrice || 0)) | currency:'EUR':'symbol-narrow' }}</span>
+      </div>
+      
+      <div class="line" *ngIf="summary!.deliveryPrice">
+        <span>
+          <mat-icon>local_shipping</mat-icon>
+          Livraison {{ summary!.deliveryOption === 'express' ? 'express' : 'standard' }} :
+        </span>
+        <span>{{ summary!.deliveryPrice | currency:'EUR':'symbol-narrow' }}</span>
+      </div>
+      
+      <div class="line total-line">
+        <span><strong>Total payé :</strong></span>
+        <span><strong>{{ summary!.total | currency:'EUR':'symbol-narrow' }}</strong></span>
+      </div>
+    </div>
+    
+    <!-- Informations de livraison -->
+    <div class="delivery-info" *ngIf="summary!.deliveryOption">
+      <mat-icon>info</mat-icon>
+      <div>
+        <p *ngIf="summary!.deliveryOption === 'standard'">
+          <strong>Livraison standard</strong> - Votre commande sera livrée sous 3-5 jours ouvrés.
+        </p>
+        <p *ngIf="summary!.deliveryOption === 'express'">
+          <strong>Livraison express</strong> - Votre commande sera livrée sous 1-2 jours ouvrés.
+        </p>
+      </div>
+    </div>
+  </div>
 
   <p *ngIf="summary?.orderIds?.length" style="margin-top:8px">
     N° de commandes :
@@ -11,10 +51,10 @@
     </ng-container>
   </p>
 
-  <h3>Détails</h3>
+  <h3>Détails des articles</h3>
   <div class="line" *ngFor="let it of summary!.items">
-    <span>{{ it.title }}</span>
-    <span>x{{ it.qty }}</span>
+    <span>{{ it.title +"  " }} </span>
+    <span>x{{ it.qty + " --->   " }}</span>
     <span>{{ (it.price * it.qty) | currency:'EUR':'symbol-narrow' }}</span>
   </div>
 

@@ -1,33 +1,98 @@
 <mat-card>
-  <h2>Livraisons à prendre</h2>
-  <div *ngIf="available.length; else noneAvail">
-    <div class="row head"><div>#</div><div>Produit</div><div>Artisan</div><div>Date</div><div></div></div>
-    <div class="row" *ngFor="let o of available">
-      <div>{{o.id}}</div>
-      <div>{{o.product?.title}}</div>
-      <div>{{o.artisan?.username || o.artisanId}}</div>
-      <div>{{o.orderDate | date:'short'}}</div>
-      <div><button mat-stroked-button color="primary" (click)="assign(o.id)">Prendre</button></div>
-    </div>
-  </div>
-  <ng-template #noneAvail><p>Aucune course disponible.</p></ng-template>
-</mat-card>
+  <h2>Livraisons</h2>
 
-<mat-card style="margin-top:16px">
-  <h2>Mes livraisons</h2>
-  <div *ngIf="mine.length; else noneMine">
-    <div class="row head"><div>#</div><div>Produit</div><div>Client</div><div>Statut</div><div>Actions</div></div>
-    <div class="row" *ngFor="let o of mine">
-      <div>{{o.id}}</div>
-      <div>{{o.product?.title}}</div>
-      <div>{{o.client?.username || o.clientId}}</div>
-      <div>{{o.status}}</div>
-      <div class="actions">
-        <button mat-button (click)="update(o.id,'PickedUp')">PickedUp</button>
-        <button mat-button (click)="update(o.id,'InTransit')">InTransit</button>
-        <button mat-raised-button color="primary" (click)="update(o.id,'Delivered')">Delivered</button>
+  <div *ngIf="loading">Chargement…</div>
+
+  <!-- DISPONIBLES (non assignées) -->
+  <section *ngIf="!loading">
+    <h3>Livraisons à prendre</h3>
+    <p *ngIf="!available.length">Aucune livraison disponible.</p>
+
+    <div class="list" *ngIf="available.length">
+      <div class="row head">
+        <div>#</div>
+        <div>Statut</div>
+        <div>Créée le</div>
+        <div class="actions">Actions</div>
+      </div>
+
+      <div class="row" *ngFor="let o of available; trackBy: trackById">
+        <div>#{{ o.id }}</div>
+        <div>{{ o.status }}</div>
+        <div>{{ o.orderDate | date:'short' }}</div>
+        <div class="actions">
+          <button mat-stroked-button color="primary" (click)="assign(o.id)">S’assigner</button>
+        </div>
       </div>
     </div>
-  </div>
-  <ng-template #noneMine><p>Aucune commande assignée.</p></ng-template>
+  </section>
+
+  <mat-divider style="margin: 16px 0;"></mat-divider>
+
+  <!-- MES LIVRAISONS ACTIVES -->
+  <section *ngIf="!loading">
+    <h3>Mes livraisons</h3>
+    <p *ngIf="!mine.length">Aucune livraison en cours.</p>
+
+    <div class="list" *ngIf="mine.length">
+      <div class="row head">
+        <div>#</div>
+        <div>Statut</div>
+        <div>Créée le</div>
+        <div class="actions">Actions</div>
+      </div>
+
+      <div class="row" *ngFor="let o of mine; trackBy: trackById">
+        <div>#{{ o.id }}</div>
+        <div>{{ o.status }}</div>
+        <div>{{ o.orderDate | date:'short' }}</div>
+        <div class="actions">
+          <!-- Transitions simples selon le statut courant -->
+          <ng-container [ngSwitch]="o.status">
+            <ng-container *ngSwitchCase="'Shipped'">
+              <button mat-stroked-button color="primary" (click)="update(o.id, 'PickedUp')">Pris en charge</button>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'PickedUp'">
+              <button mat-stroked-button (click)="update(o.id, 'InTransit')">En transit</button>
+              <button mat-raised-button color="primary" (click)="update(o.id, 'Delivered')">Livré</button>
+            </ng-container>
+
+            <ng-container *ngSwitchCase="'InTransit'">
+              <button mat-raised-button color="primary" (click)="update(o.id, 'Delivered')">Livré</button>
+            </ng-container>
+
+            <ng-container *ngSwitchDefault>
+
+              <button mat-stroked-button (click)="update(o.id, 'PickedUp')">Pris en charge</button>
+            </ng-container>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <mat-divider style="margin: 16px 0;"></mat-divider>
+
+  <!-- MES LIVRAISONS TERMINÉES -->
+  <section *ngIf="!loading">
+    <h3>Mes livraisons terminées</h3>
+    <p *ngIf="!done.length">Aucune livraison terminée.</p>
+
+    <div class="list" *ngIf="done.length">
+      <div class="row head">
+        <div>#</div>
+        <div>Statut</div>
+        <div>Créée le</div>
+        <div>Terminé</div>
+      </div>
+
+      <div class="row" *ngFor="let o of done; trackBy: trackById">
+        <div>#{{ o.id }}</div>
+        <div>{{ o.status }}</div>
+        <div>{{ o.orderDate | date:'short' }}</div>
+        <div>—</div>
+      </div>
+    </div>
+  </section>
 </mat-card>

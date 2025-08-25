@@ -10,14 +10,35 @@
 
   <div class="grid" *ngIf="!loading && !error && products.length">
     <mat-card class="card" *ngFor="let p of products">
+      <!-- Ajouter l'image et la catégorie -->
+      <div class="card-header" *ngIf="p.imageUrl">
+        <img [src]="p.imageUrl" [alt]="p.title" class="product-image" />
+        <div class="category-badge" *ngIf="p.category">
+          {{ p.category }}
+        </div>
+      </div>
+      
       <mat-card-title>{{ p.title }}</mat-card-title>
       <mat-card-content>
         <p class="price">{{ p.price | currency:'EUR':'symbol-narrow' }}</p>
+        
+        <!-- Afficher la catégorie -->
+        <p class="category" *ngIf="p.category">
+          <mat-icon>category</mat-icon>
+          {{ p.category }}
+        </p>
+        
         <p class="desc">{{ p.description || '—' }}</p>
       </mat-card-content>
       <mat-card-actions>
-        <a mat-button [routerLink]="['/artisan/products', p.id, 'edit']">Modifier</a>
-        <button mat-button color="warn" (click)="remove(p)">Supprimer</button>
+        <a mat-button [routerLink]="['/artisan/products', p.id, 'edit']">
+          <mat-icon>edit</mat-icon>
+          Modifier
+        </a>
+        <button mat-button color="warn" (click)="remove(p)">
+          <mat-icon>delete</mat-icon>
+          Supprimer
+        </button>
       </mat-card-actions>
     </mat-card>
   </div>

@@ -10,6 +10,8 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { AuthService } from '../../services/auth.service';
 import { CartService } from '../../services/cart.service';
 import { AdminProductsService } from '../../services/admin-products.service';
+import { FavoritesService } from '../../services/favorites.service';
+
 
 @Component({
   selector: 'app-navbar',
@@ -27,10 +29,13 @@ export class NavbarComponent implements OnInit {
   private router = inject(Router);
   private adminProducts = inject(AdminProductsService);
   public cart = inject(CartService);
+  private fav = inject(FavoritesService);
+
 
   isLoggedIn = false;
   role: string | null = null;
   pendingCount = 0;
+   favoritesCount = 0;
 
   ngOnInit(): void {
     this.auth.state$.subscribe(loggedIn => {
@@ -43,6 +48,11 @@ export class NavbarComponent implements OnInit {
           next: r => this.adminProducts.pendingCount$.next(r.count ?? 0),
           error: () => this.adminProducts.pendingCount$.next(0)
         });
+      } 
+      else if (this.role === 'Client') {
+         this.fav.ids$.subscribe(set => {
+      this.favoritesCount = set.size;
+    });
       } else {
         this.pendingCount = 0;
       }

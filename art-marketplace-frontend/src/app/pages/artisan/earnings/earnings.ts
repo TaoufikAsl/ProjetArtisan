@@ -17,8 +17,9 @@ export class ArtisanEarningsPage {
   private api = inject(EarningsService);
   private cdr = inject(ChangeDetectorRef);
 
-  from = ''; // 'yyyy-MM-dd'
-  to = '';   // 'yyyy-MM-dd'
+  from = this.toInputDate(this.shiftDays(new Date(), -30));
+  to   = this.toInputDate(new Date());
+
   data: Earnings | null = null;
   loading = false;
   error: string | null = null;
@@ -29,10 +30,10 @@ export class ArtisanEarningsPage {
     this.loading = true;
     this.error = null;
 
-    const fromIso = this.from ? this.startOfDayUtcIso(this.from) : undefined;
-    const toIso   = this.to   ? this.endOfDayUtcIso(this.to)   : undefined;
+    const fromParam = this.from || undefined;                 // yyyy-MM-dd
+    const toParam   = this.to ? `${this.to}T23:59:59` : undefined; // inclusivité jour de fin
 
-    this.api.get(fromIso, toIso)
+    this.api.get(fromParam, toParam)
       .pipe(finalize(() => { this.loading = false; this.cdr.markForCheck(); }))
       .subscribe({
         next: d => { this.data = d; },
@@ -40,16 +41,6 @@ export class ArtisanEarningsPage {
       });
   }
 
-  // '2025-08-21' -> '2025-08-21T00:00:00Z'
-  private startOfDayUtcIso(d: string) {
-    const [y,m,day] = d.split('-').map(Number);
-    return new Date(Date.UTC(y, (m-1), day, 0, 0, 0)).toISOString();
-    // ex: '2025-08-21T00:00:00.000Z'
-  }
-
-  // '2025-08-21' -> '2025-08-21T23:59:59Z'
-  private endOfDayUtcIso(d: string) {
-    const [y,m,day] = d.split('-').map(Number);
-    return new Date(Date.UTC(y, (m-1), day, 23, 59, 59)).toISOString();
-  }
+  private toInputDate(d: Date) { return d.toISOString().slice(0, 10); }
+  private shiftDays(d: Date, delta: number) { const x = new Date(d); x.setDate(x.getDate() + delta); return x; }
 }

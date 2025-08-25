@@ -18,50 +18,71 @@ public class ProductController : ControllerBase
         _context = context;
     }
 
-  //Retourne les produits approuvés uniquement
+    //Retourne les produits approuvés uniquement
     [AllowAnonymous]
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Product>>> GetAll(
-        [FromQuery] string? q,
-        [FromQuery] decimal? minPrice,
-        [FromQuery] decimal? maxPrice,
-        [FromQuery] string? sort,               // "priceAsc" ,"priceDesc" , "recent"
+    public async Task<ActionResult<IEnumerable<object>>> List(
+        [FromQuery] string? q = null,
+        [FromQuery] decimal? minPrice = null,
+        [FromQuery] decimal? maxPrice = null,
+        [FromQuery] int? artisanId = null, // ✅ Ajouter ce paramètre
+        [FromQuery] string sort = "recent",
         [FromQuery] int skip = 0,
         [FromQuery] int take = 50,
         CancellationToken ct = default)
     {
-        take = Math.Clamp(take, 1, 100);
+        var query = _context.Products.AsNoTracking()
+            .Include(p => p.Artisan) 
+            .AsQueryable();
 
-        IQueryable<Product> query = _context.Products
-            .AsNoTracking()
-            .Include(p => p.Artisan)
-            .Where(p => p.IsApproved); 
 
-        // recherche texte
-        if (!string.IsNullOrWhiteSpace(q))
-        {
-            var term = q.Trim();
-            query = query.Where(p =>
-                p.Title.Contains(term) ||
-                (p.Description != null && p.Description.Contains(term)));
-        }
+        if (artisanId.HasValue)
+            query = query.Where(p => p.ArtisanId == artisanId.Value);
 
-        // filtres de prix
-        if (minPrice.HasValue) query = query.Where(p => p.Price >= minPrice.Value);
-        if (maxPrice.HasValue) query = query.Where(p => p.Price <= maxPrice.Value);
 
-        // tri
-        query = sort switch
-        {
-            "priceAsc" => query.OrderBy(p => p.Price).ThenByDescending(p => p.Id),
-            "priceDesc" => query.OrderByDescending(p => p.Price).ThenByDescending(p => p.Id),
-            _ => query.OrderByDescending(p => p.Id) // "recent" par défaut
-        };
+        var products = await query
+            .Skip(skip)
+            .Take(take)
+            .Select(p => new
+            {
+                p.Id,
+                p.Title,
+                p.Description,
+                p.Price,
+                p.ImageUrl,
+                p.ArtisanId,
+                p.Category,
+                p.CreatedAt,
+                p.UpdatedAt,
+                Artisan = new
+                {
+                    p.Artisan.Id,
+                    p.Artisan.Username
+                }
+            })
+            .ToListAsync(ct);
 
-        var products = await query.Skip(skip).Take(take).ToListAsync(ct);
         return Ok(products);
     }
 
+
+    // endpoint pour récupérer la liste des artisans
+    [AllowAnonymous]
+    [HttpGet("artisans")]
+    public async Task<ActionResult<IEnumerable<object>>> GetArtisans(CancellationToken ct)
+    {
+        var artisans = await _context.Users
+            .Where(u => u.Role == "Artisan")
+            .Select(u => new
+            {
+                u.Id,
+                u.Username
+            })
+            .OrderBy(u => u.Username)
+            .ToListAsync(ct);
+
+        return Ok(artisans);
+    }
     // Détail : visible si approuvé, ou si Admin, ou si Artisan propriétaire
     [AllowAnonymous]
     [HttpGet("{id:int}")]

@@ -21,6 +21,7 @@ public class ReviewController : ControllerBase
     {
         var exists = await _ctx.Products.AnyAsync(p => p.Id == productId, ct);
         if (!exists) return NotFound("Produit introuvable.");
+        
         var list = await _ctx.Reviews.AsNoTracking()
             .Where(r => r.ProductId == productId)
             .OrderByDescending(r => r.Id)
@@ -72,25 +73,167 @@ public class ReviewController : ControllerBase
         return CreatedAtAction(nameof(ForProduct), new { productId = dto.ProductId }, review);
     }
 
-
     // GET /api/review/artisan
     [Authorize(Roles = "Artisan")]
     [HttpGet("artisan")]
-    public async Task<ActionResult<IEnumerable<Review>>> ForArtisan(CancellationToken ct)
+    public async Task<ActionResult<IEnumerable<object>>> ForArtisan(CancellationToken ct)
     {
         var artisanId = GetUserId();
         if (artisanId is null) return Unauthorized();
 
+        // ✅ Utiliser une projection pour éviter les cycles
         var reviews = await _ctx.Reviews
-            .Include(r => r.Product)
-            .Include(r => r.Client)
             .Where(r => r.Product.ArtisanId == artisanId.Value)
+            .Select(r => new
+            {
+                r.Id,
+                r.ProductId,
+                r.ClientId,
+                r.Rating,
+                r.Comment,
+                r.CreatedAt,
+                r.ArtisanResponse,
+                r.ArtisanResponseDate,
+                // ✅ Sélectionner seulement les données nécessaires du produit
+                Product = new
+                {
+                    r.Product.Id,
+                    r.Product.Title
+                },
+                // ✅ Sélectionner seulement les données nécessaires du client
+                Client = new
+                {
+                    r.Client.Id,
+                    r.Client.Username
+                }
+            })
             .OrderByDescending(r => r.CreatedAt)
             .ToListAsync(ct);
 
         return Ok(reviews);
     }
 
+    // ✅ POST /api/review/{id}/response - Ajouter réponse artisan
+    [Authorize(Roles = "Artisan")]
+    [HttpPost("{reviewId:int}/response")]
+    public async Task<ActionResult<Review>> AddResponse(int reviewId, [FromBody] ArtisanResponseDto dto, CancellationToken ct)
+    {
+        if (dto is null || string.IsNullOrWhiteSpace(dto.Response))
+            return BadRequest("Réponse requise.");
+
+        var artisanId = GetUserId();
+        if (artisanId is null) return Unauthorized();
+
+        // Vérifier que l'avis existe et appartient à l'artisan
+        var review = await _ctx.Reviews
+            .Include(r => r.Product)
+            .FirstOrDefaultAsync(r => r.Id == reviewId, ct);
+
+        if (review == null) return NotFound("Avis introuvable.");
+
+        if (review.Product.ArtisanId != artisanId.Value)
+            return Forbid("Vous ne pouvez répondre qu'aux avis de vos produits.");
+
+        // ✅ CORRECTION : Vérifier plus précisément s'il y a déjà une réponse
+        var hasExistingResponse = !string.IsNullOrWhiteSpace(review.ArtisanResponse);
+
+        if (hasExistingResponse)
+        {
+            // ✅ LOG pour débugger
+            Console.WriteLine($"🔍 Review {reviewId} a déjà une réponse: '{review.ArtisanResponse}'");
+            return BadRequest("Vous avez déjà répondu à cet avis. Utilisez PUT pour modifier votre réponse.");
+        }
+
+        // ✅ LOG pour débugger
+        Console.WriteLine($"✅ Ajout de réponse pour review {reviewId}: '{dto.Response}'");
+
+        // Ajouter la réponse
+        review.ArtisanResponse = dto.Response.Trim();
+        review.ArtisanResponseDate = DateTime.UtcNow;
+
+        await _ctx.SaveChangesAsync(ct);
+
+        return Ok(review);
+    }
+
+    // ✅ Endpoint universel pour créer OU modifier une réponse (SANS cycles)
+    [Authorize(Roles = "Artisan")]
+    [HttpPut("{reviewId:int}/response/upsert")]
+    public async Task<ActionResult<object>> UpsertResponse(int reviewId, [FromBody] ArtisanResponseDto dto, CancellationToken ct)
+    {
+        if (dto is null || string.IsNullOrWhiteSpace(dto.Response))
+            return BadRequest("Réponse requise.");
+
+        var artisanId = GetUserId();
+        if (artisanId is null) return Unauthorized();
+
+        var review = await _ctx.Reviews
+            .Include(r => r.Product)
+            .FirstOrDefaultAsync(r => r.Id == reviewId, ct);
+
+        if (review == null) return NotFound("Avis introuvable.");
+
+        if (review.Product.ArtisanId != artisanId.Value)
+            return Forbid("Vous ne pouvez répondre qu'aux avis de vos produits.");
+
+        // ✅ Créer OU modifier la réponse
+        review.ArtisanResponse = dto.Response.Trim();
+        review.ArtisanResponseDate = DateTime.UtcNow;
+
+        await _ctx.SaveChangesAsync(ct);
+
+        // ✅ Retourner seulement les données nécessaires (SANS cycles)
+        var result = new
+        {
+            review.Id,
+            review.ProductId,
+            review.ClientId,
+            review.Rating,
+            review.Comment,
+            review.CreatedAt,
+            review.ArtisanResponse,
+            review.ArtisanResponseDate,
+            Product = new
+            {
+                review.Product.Id,
+                review.Product.Title
+            }
+        };
+
+        return Ok(result);
+    }
+
+    // ✅ DELETE /api/review/{id}/response - Supprimer réponse artisan
+    [Authorize(Roles = "Artisan")]
+    [HttpDelete("{reviewId:int}/response")]
+    public async Task<ActionResult> DeleteResponse(int reviewId, CancellationToken ct)
+    {
+        var artisanId = GetUserId();
+        if (artisanId is null) return Unauthorized();
+
+        // Vérifier que l'avis existe et appartient à l'artisan
+        var review = await _ctx.Reviews
+            .Include(r => r.Product)
+            .FirstOrDefaultAsync(r => r.Id == reviewId, ct);
+
+        if (review == null) return NotFound("Avis introuvable.");
+        
+        if (review.Product.ArtisanId != artisanId.Value)
+            return Forbid("Vous ne pouvez supprimer que vos réponses.");
+
+        if (string.IsNullOrWhiteSpace(review.ArtisanResponse))
+            return BadRequest("Aucune réponse à supprimer.");
+
+        // Supprimer la réponse
+        review.ArtisanResponse = null;
+        review.ArtisanResponseDate = null;
+
+        await _ctx.SaveChangesAsync(ct);
+
+        return NoContent();
+    }
+
+    
     private int? GetUserId()
     {
         var v = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -98,4 +241,6 @@ public class ReviewController : ControllerBase
     }
 }
 
+// ✅ DTOs
 public sealed record CreateReviewDto(int ProductId, int Rating, string? Comment);
+public sealed record ArtisanResponseDto(string Response);

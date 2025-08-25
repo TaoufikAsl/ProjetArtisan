@@ -1,57 +1,80 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, map } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 export interface CartItem {
   productId: number;
   title: string;
   price: number;
   qty: number;
-  imageUrl?: string | null; // optionnel
 }
-
-const STORAGE_KEY = 'cart';
 
 @Injectable({ providedIn: 'root' })
 export class CartService {
-  private _items = new BehaviorSubject<CartItem[]>(this.load());
-  readonly items$ = this._items.asObservable();
+  private readonly KEY = 'am_cart_v1';
+  private readonly isBrowser = typeof window !== 'undefined' && typeof localStorage !== 'undefined';
 
-  readonly total$ = this.items$.pipe(
-    map(items => items.reduce((sum, it) => sum + it.price * it.qty, 0))
-  );
-  readonly count$ = this.items$.pipe(
-    map(items => items.reduce((sum, it) => sum + it.qty, 0))
-  );
+  private _items$ = new BehaviorSubject<CartItem[]>(this.load());
 
-  add(item: Omit<CartItem, 'qty'>, qty = 1) {
-    const items = [...this._items.value];
-    const i = items.findIndex(x => x.productId === item.productId);
-    if (i >= 0) items[i] = { ...items[i], qty: items[i].qty + Math.max(1, qty) };
-    else items.push({ ...item, qty: Math.max(1, qty) });
-    this.commit(items);
+  readonly items$ = this._items$.asObservable();
+  readonly count$ = this.items$.pipe(map(items => items.reduce((n, it) => n + it.qty, 0)));
+  readonly total$ = this.items$.pipe(map(items => items.reduce((s, it) => s + it.price * it.qty, 0)));
+
+  add(productId: number, title: string, price: number, qty = 1): void {
+    const current = this._items$.value;
+    const existing = current.find(it => it.productId === productId);
+    
+    if (existing) {
+      existing.qty += qty;
+    } else {
+      current.push({ productId, title, price, qty });
+    }
+    
+    this.commit(current);
   }
 
-  updateQty(productId: number, qty: number) {
-    const q = Math.max(1, Number(qty) || 1);                // ⬅️ clamp
-    const items = this._items.value.map(it =>
-      it.productId === productId ? { ...it, qty: q } : it
-    );
-    this.commit(items);
+  updateQty(productId: number, qty: number): void {
+    if (qty <= 0) {
+      this.remove(productId);
+      return;
+    }
+    
+    const current = this._items$.value;
+    const item = current.find(it => it.productId === productId);
+    if (item) {
+      item.qty = qty;
+      this.commit(current);
+    }
   }
 
-  remove(productId: number) {
-    const items = this._items.value.filter(it => it.productId !== productId);
-    this.commit(items);
+  remove(productId: number): void {
+    const current = this._items$.value.filter(it => it.productId !== productId);
+    this.commit(current);
   }
 
-  clear() { this.commit([]); }
-
-  private commit(items: CartItem[]) {
-    this._items.next(items);
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); } catch {}
+  clear(): void {
+    this.commit([]);
   }
+
+  private commit(items: CartItem[]): void {
+    this._items$.next(items);
+    if (!this.isBrowser) return;
+    try {
+      localStorage.setItem(this.KEY, JSON.stringify(items));
+    } catch (e) {
+      console.warn('Impossible de sauvegarder le panier', e);
+    }
+  }
+
   private load(): CartItem[] {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
-    catch { return []; }
+    if (!this.isBrowser) return [];
+    try {
+      const raw = localStorage.getItem(this.KEY);
+      if (!raw) return [];
+      const items = JSON.parse(raw) as CartItem[];
+      return Array.isArray(items) ? items : [];
+    } catch {
+      return [];
+    }
   }
 }

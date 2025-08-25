@@ -54,6 +54,7 @@ public class AdminController : ControllerBase
         return CreatedAtAction(nameof(GetUsers), new { id = user.Id }, new AdminUserDto(user.Id, user.Username, user.Role));
     }
 
+
     // DELETE /api/admin/users/{id}
     [HttpDelete("users/{id:int}")]
     public async Task<IActionResult> DeleteUser(int id, CancellationToken ct)

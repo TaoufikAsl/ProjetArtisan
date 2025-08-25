@@ -5,7 +5,9 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon'; 
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { finalize } from 'rxjs/operators';
 import { of, switchMap } from 'rxjs';
@@ -16,12 +18,14 @@ import { ProductService, Product } from '../../../../services/product.service';
   standalone: true,
   imports: [
     CommonModule, ReactiveFormsModule, RouterLink,
-    MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatSnackBarModule
+    MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule,
+    MatButtonModule, MatIconModule, MatSnackBarModule
   ],
   templateUrl: './form.html',
   styleUrls: ['./form.scss'],
 })
 export class ArtisanProductFormComponent implements OnInit {
+
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -31,18 +35,20 @@ export class ArtisanProductFormComponent implements OnInit {
 
   id: number | null = null;
   loading = false;
-
-  // Image
   selectedFile: File | null = null;
   previewUrl: string | null = null;
 
-  // ✅ Getter utilisé par le template
+  get categories(): string[] {
+    return this.api.categories;
+  }
+
   get isEdit(): boolean { return this.id !== null; }
 
   form = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(2)]],
     description: [''],
     price: [0, [Validators.required, Validators.min(0.01)]],
+    category: ['', Validators.required],
     imageUrl: ['']
   });
 
@@ -60,6 +66,7 @@ export class ArtisanProductFormComponent implements OnInit {
               title: p.title,
               description: p.description || '',
               price: p.price,
+              category: p.category || '',
               imageUrl: p.imageUrl || ''
             });
             this.previewUrl = p.imageUrl || null;
@@ -102,6 +109,7 @@ export class ArtisanProductFormComponent implements OnInit {
           title: this.form.value.title || '',
           description: this.form.value.description || '',
           price: this.form.value.price || 0,
+          category: this.form.value.category || '',
           imageUrl: this.form.value.imageUrl || ''
         };
 

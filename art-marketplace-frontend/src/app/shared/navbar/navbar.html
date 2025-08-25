@@ -21,6 +21,13 @@
       <a mat-button routerLink="/orders">Mes commandes</a>
       <a mat-button routerLink="/cart">Panier</a>
       <span class="cart-count" *ngIf="cart.count$ | async as count">{{ count }}</span>
+      <button mat-icon-button routerLink="/favorites"
+            [matBadge]="favoritesCount"
+            [matBadgeHidden]="favoritesCount === 0"
+            matBadgeColor="warn"
+            aria-label="Mes favoris">
+      <mat-icon>favorite</mat-icon>
+      </button>
     </ng-container>
 
     <ng-container *ngIf="role === 'DeliveryPartner'">
@@ -30,7 +37,7 @@
     <ng-container *ngIf="role === 'Admin'">
       <a mat-button routerLink="/admin">Admin</a>
       
-      <!-- Badge corrigé -->
+      <!-- Badge -->
       <a
         mat-stroked-button
         routerLink="/admin/products"

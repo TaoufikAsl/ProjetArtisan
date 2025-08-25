@@ -4,7 +4,7 @@
   <p class="error" *ngIf="error">{{ error }}</p>
 
   <ng-container *ngIf="reviews$ | async as reviews; else loadingTpl">
-    <p *ngIf="reviews && reviews.length === 0 && !error">Aucun avis pour l’instant.</p>
+    <p *ngIf="reviews && reviews.length === 0 && !error">Aucun avis pour l'instant.</p>
 
     <div class="list" *ngIf="reviews && reviews.length > 0">
       <mat-card class="item" *ngFor="let r of reviews">
@@ -22,11 +22,88 @@
         </mat-card-title>
 
         <mat-card-content>
-          <p class="comment">{{ r.comment || '—' }}</p>
-          <p class="meta">
-            Client #{{ r.clientId }} •
-            {{ r.createdAt | date:'short' }}
-          </p>
+          <!-- Commentaire du client -->
+          <div class="client-review">
+            <p class="comment">{{ r.comment || '—' }}</p>
+            <p class="meta">
+              Client #{{ r.clientId }} •
+              {{ r.createdAt | date:'short' }}
+            </p>
+          </div>
+
+          <!-- Section réponse artisan -->
+          <div class="artisan-response-section">
+            <!-- Réponse existante (mode lecture) -->
+            <div *ngIf="r.hasResponse && !r.isEditing" class="existing-response">
+              <div class="response-header">
+                <mat-icon>reply</mat-icon>
+                <strong>Votre réponse</strong>
+                <span class="response-date">{{ r.artisanResponseDate | date:'short' }}</span>
+              </div>
+              <p class="response-text">{{ r.artisanResponse }}</p>
+              <div class="response-actions">
+                <button mat-button color="primary" (click)="toggleEdit(r)">
+                  <mat-icon>edit</mat-icon>
+                  Modifier
+                </button>
+                <button mat-button color="warn" (click)="deleteResponse(r)" [disabled]="r.isSubmitting">
+                  <mat-icon>delete</mat-icon>
+                  Supprimer
+                </button>
+              </div>
+            </div>
+
+            <!-- Formulaire de réponse (mode édition/création) -->
+            <div *ngIf="r.isEditing || !r.hasResponse" class="response-form">
+              <form [formGroup]="getResponseForm(r.id)" (ngSubmit)="saveResponse(r)">
+                <mat-form-field appearance="outline" class="w-full">
+                  <mat-label>{{ r.hasResponse ? 'Modifier votre réponse' : 'Répondre au client' }}</mat-label>
+                  <textarea 
+                    matInput 
+                    formControlName="response" 
+                    rows="3" 
+                    placeholder="Votre réponse professionnelle au client..."
+                    [disabled]="r.isSubmitting || !getResponseForm(r.id).valid">
+                  </textarea>
+                
+                  <mat-error *ngIf="getResponseForm(r.id).get('response')?.hasError('required')">
+                    Une réponse est requise
+                  </mat-error>
+                  <mat-error *ngIf="getResponseForm(r.id).get('response')?.hasError('minlength')">
+                    Minimum 10 caractères
+                  </mat-error>
+                </mat-form-field>
+
+                <div class="form-actions">
+                  <button 
+                    mat-raised-button 
+                    color="primary" 
+                    type="submit"
+                    [disabled]="r.isSubmitting || isFormInvalid(r.id)">
+                    <mat-icon *ngIf="r.isSubmitting">hourglass_empty</mat-icon>
+                    <mat-icon *ngIf="!r.isSubmitting">{{ r.hasResponse ? 'save' : 'send' }}</mat-icon>
+                    {{ r.isSubmitting ? 'Sauvegarde...' : (r.hasResponse ? 'Sauvegarder' : 'Publier') }}
+                  </button>
+                  
+                  <button 
+                    mat-button 
+                    type="button" 
+                    (click)="cancelEdit(r)"
+                    [disabled]="r.isSubmitting">
+                    Annuler
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Bouton pour ajouter une réponse -->
+            <div *ngIf="!r.hasResponse && !r.isEditing" class="no-response">
+              <button mat-stroked-button color="primary" (click)="toggleEdit(r)">
+                <mat-icon>reply</mat-icon>
+                Répondre à cet avis
+              </button>
+            </div>
+          </div>
         </mat-card-content>
       </mat-card>
     </div>
@@ -36,4 +113,3 @@
     <div class="center"><mat-spinner diameter="36"></mat-spinner></div>
   </ng-template>
 </div>
-

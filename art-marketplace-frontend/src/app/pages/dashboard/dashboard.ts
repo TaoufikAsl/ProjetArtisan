@@ -1,19 +1,13 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { NgIf, NgFor, CommonModule, CurrencyPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-
-// Material
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
-
-// Services
 import { AuthService } from '../../services/auth.service';
 import { ProductService, Product } from '../../services/product.service';
 import { OrderService, Order } from '../../services/order.service';
 import { EarningsService, Earnings } from '../../services/earnings.service';
 import { DeliveryService, DeliveryOrder } from '../../services/delivery.service';
-
-// RxJS
 import { finalize } from 'rxjs/operators';
 
 @Component({
@@ -59,7 +53,7 @@ export class DashboardComponent implements OnInit {
     const r = this.role;
 
     if (r === 'Artisan') {
-      // Mes produits (limités à 3)
+      // Mes produits
       this.productsApi.mine()
         .pipe(finalize(() => { this.loading = false; this.cdr.markForCheck(); }))
         .subscribe({
@@ -67,20 +61,20 @@ export class DashboardComponent implements OnInit {
           error: () => { this.error = 'Impossible de charger vos produits.'; }
         });
 
-      // Dernières commandes reçues (limitées à 3) — pas de spinner global ici
+      // Dernières commandes reçues (limitées à 3)
       this.ordersApi.artisanOrders().subscribe({
         next: (o) => { this.ordersArtisan = o.slice(0, 3); this.cdr.markForCheck(); },
-        error: () => { /* silencieux pour ne pas polluer le dashboard */ }
+        error: () => {  }
       });
 
-      // Revenus (card rapide)
+      // Revenus
       this.earningsApi.get().subscribe({
         next: (e) => { this.earnings = e; this.cdr.markForCheck(); },
         error: () => { /* silencieux */ }
       });
 
     } else if (r === 'Client') {
-      // Mes dernières commandes (limitées à 3)
+      // Mes dernières commandes 
       this.ordersApi.myOrders()
         .pipe(finalize(() => { this.loading = false; this.cdr.markForCheck(); }))
         .subscribe({
@@ -98,7 +92,7 @@ export class DashboardComponent implements OnInit {
         });
 
     } else {
-      // Admin / autres rôles : lever le spinner, on complétera plus tard
+      
       this.loading = false;
       this.cdr.markForCheck();
     }

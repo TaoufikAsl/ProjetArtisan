@@ -133,9 +133,9 @@ public class OrderController : ControllerBase
         return NoContent();
     }
 
-    // DETAIL COMMUN
+   
 
-    // GET: /api/order/{id} (Admin ou partie prenante)
+    // GET: /api/order/{id} 
     [Authorize]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<Order>> GetById(int id, CancellationToken ct)
@@ -158,6 +158,46 @@ public class OrderController : ControllerBase
         if (order.ClientId != uid && order.ArtisanId != uid) return Forbid();
 
         return Ok(order);
+    }
+
+
+    //Earning
+
+    // GET /api/order/artisan/earnings?from=yyyy-MM-dd&to=yyyy-MM-ddTHH:mm:ss
+    [Authorize(Roles = "Artisan")]
+    [HttpGet("/api/order/artisan/earnings")]   // <- chemin ABSOLU, ne dépend plus de [Route("api/[controller]")]
+    public async Task<ActionResult<EarningsDto>> GetArtisanEarnings(
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        CancellationToken ct)
+    {
+        var artisanId = GetUserId();
+        if (artisanId is null) return Unauthorized();
+
+        if (from.HasValue && to.HasValue && from > to)
+            return BadRequest("Intervalle invalide.");
+
+        var q = _context.Orders.AsNoTracking()
+            .Where(o => o.ArtisanId == artisanId && o.Status == "Delivered");
+
+        if (from.HasValue) q = q.Where(o => o.OrderDate >= from.Value);
+        if (to.HasValue) q = q.Where(o => o.OrderDate <= to.Value);
+
+        var total = await (
+            from o in q
+            join p in _context.Products.AsNoTracking() on o.ProductId equals p.Id
+            select (decimal?)p.Price
+        ).SumAsync(ct) ?? 0m;
+
+        var count = await q.CountAsync(ct);
+
+        return Ok(new EarningsDto
+        {
+            Total = total,
+            OrdersCount = count,
+            From = from,
+            To = to
+        });
     }
 
     // LIVREUR
@@ -255,6 +295,8 @@ public class OrderController : ControllerBase
         public DateTime? From { get; set; }
         public DateTime? To { get; set; }
     }
+
+
 }
 
 public sealed record CreateOrderDto(int ProductId);

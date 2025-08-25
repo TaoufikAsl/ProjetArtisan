@@ -6,7 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { finalize } from 'rxjs/operators';
-import { ProductService, Product }from '../../../../services/product.service';
+import { ProductService, Product } from '../../../../services/product.service';
 
 @Component({
   selector: 'app-artisan-products',
@@ -41,9 +41,11 @@ export class ArtisanProductsComponent implements OnInit {
   remove(p: Product) {
     if (!confirm(`Supprimer "${p.title}" ?`)) return;
     this.api.delete(p.id).subscribe({
-      next: () => { this.snack.open('Supprimé ✅', '', { duration: 1500 }); this.load(); },
+      next: () => { 
+        this.snack.open('Supprimé ✅', '', { duration: 1500 }); 
+        this.load(); 
+      },
       error: () => this.snack.open('Suppression impossible', '', { duration: 2000 })
     });
   }
-}import { from } from 'rxjs';
-
+}

@@ -1,5 +1,8 @@
 <mat-card class="container">
-  <mat-card-title>Mon panier</mat-card-title>
+  <mat-card-title>
+    <mat-icon>shopping_cart</mat-icon>
+    Mon panier
+  </mat-card-title>
 
   <div *ngIf="(cart.items$ | async) as items; else emptyTpl">
     <div class="row head">
@@ -27,16 +30,24 @@
 
     <div class="footer" *ngIf="items.length">
       <div class="left">
-        <button mat-stroked-button color="warn" (click)="cart.clear()">Vider</button>
+        <button mat-stroked-button color="warn" (click)="cart.clear()">
+          <mat-icon>clear_all</mat-icon>
+          Vider le panier
+        </button>
       </div>
       <div class="right">
         <div class="grand">
           Total: <strong>{{ cart.total$ | async | currency:'EUR':'symbol-narrow' }}</strong>
         </div>
-        <button mat-raised-button color="primary"
+       
+        
+        <button mat-raised-button 
+                color="primary"
                 [disabled]="loading"
-                (click)="checkout()">
-          {{ loading ? 'Traitement...' : 'Valider la commande' }}
+                (click)="openPayment()">
+          <mat-icon *ngIf="!loading">payment</mat-icon>
+          <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
+          {{ loading ? 'Traitement...' : 'Procéder au paiement' }}
         </button>
       </div>
     </div>
@@ -44,5 +55,12 @@
 </mat-card>
 
 <ng-template #emptyTpl>
-  <p style="padding:16px">Votre panier est vide.</p>
+  <div class="empty-cart">
+    <mat-icon>shopping_cart</mat-icon>
+    <p>Votre panier est vide.</p>
+    <button mat-raised-button routerLink="/products" color="primary">
+      <mat-icon>storefront</mat-icon>
+      Parcourir le catalogue
+    </button>
+  </div>
 </ng-template>

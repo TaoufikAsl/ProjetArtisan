@@ -14,6 +14,10 @@ public class Product
     public int ArtisanId { get; set; }
     public User? Artisan { get; set; }
 
+    public string? Category { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
+
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
 
     public bool IsApproved { get; set; } = false;

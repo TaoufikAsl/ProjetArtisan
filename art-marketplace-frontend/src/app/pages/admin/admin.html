@@ -1,42 +1,165 @@
 <mat-card>
+  <!-- Indicateur de statut -->
+  <div class="status-bar" [ngClass]="isOfflineMode ? 'offline' : 'online'">
+    <mat-icon>{{ isOfflineMode ? 'cloud_off' : 'cloud_done' }}</mat-icon>
+    <span>{{ isOfflineMode ? 'Mode hors ligne - Données locales' : 'Mode en ligne' }}</span>
+    
+    <!-- Bouton de refresh -->
+    <button mat-stroked-button (click)="forceRefresh()" class="refresh-btn"
+            matTooltip="Recharger la liste des utilisateurs">
+      <mat-icon>refresh</mat-icon>
+      Actualiser
+    </button>
+    
+    <!-- Bouton pour nettoyer le cache en mode développement -->
+    <button mat-stroked-button (click)="clearCache()" class="clear-cache-btn" 
+            *ngIf="isOfflineMode"
+            matTooltip="Nettoyer le cache local et recharger">
+      <mat-icon>refresh</mat-icon>
+      Nettoyer le cache
+    </button>
+  </div>
+
+  <!-- ...rest of the template... -->
+</mat-card>
+
   <h2>Administration — Utilisateurs</h2>
 
-  <form [formGroup]="form" class="row">
-    <mat-form-field appearance="outline">
-      <mat-label>Username</mat-label>
-      <input matInput formControlName="username" />
-    </mat-form-field>
+  <!-- Section de création d'utilisateur -->
+  <div class="section">
+    <h3>Créer un nouvel utilisateur</h3>
+    <form [formGroup]="form" class="create-form">
+      <mat-form-field appearance="outline">
+        <mat-label>Username</mat-label>
+        <input matInput formControlName="username" />
+      </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Password</mat-label>
-      <input matInput type="password" formControlName="password" />
-    </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" formControlName="password" />
+      </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Rôle</mat-label>
-      <mat-select formControlName="role">
-        <mat-option value="Client">Client</mat-option>
-        <mat-option value="Artisan">Artisan</mat-option>
-        <mat-option value="DeliveryPartner">Delivery Partner</mat-option>
-        <mat-option value="Admin">Admin</mat-option>
-      </mat-select>
-    </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Rôle</mat-label>
+        <mat-select formControlName="role">
+          <mat-option value="Client">Client</mat-option>
+          <mat-option value="Artisan">Artisan</mat-option>
+          <mat-option value="DeliveryPartner">Delivery Partner</mat-option>
+          <mat-option value="Admin">Admin</mat-option>
+        </mat-select>
+      </mat-form-field>
 
-    <button mat-raised-button color="primary" (click)="create()" [disabled]="loading">Créer</button>
-  </form>
+      <button mat-raised-button color="primary" (click)="create()" [disabled]="loading">
+        <mat-icon *ngIf="loading">hourglass_empty</mat-icon>
+        {{ loading ? 'Création...' : 'Créer' }}
+      </button>
+    </form>
+  </div>
 
-  <h3>Utilisateurs ({{ users.length }})</h3>
-  <div class="table">
-    <div class="head">
-      <div>Id</div><div>Username</div><div>Role</div><div>Actions</div>
-    </div>
-    <div class="row" *ngFor="let u of users">
-      <div>{{u.id}}</div>
-      <div>{{u.username}}</div>
-      <div>{{u.role}}</div>
-      <div class="actions">
-        <button mat-stroked-button color="warn" (click)="remove(u)">Supprimer</button>
+  <mat-divider></mat-divider>
+
+  <!-- Section de recherche et filtrage -->
+  <div class="section">
+    <h3>Rechercher et filtrer les utilisateurs</h3>
+    <form [formGroup]="filter" class="filter-form">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Rechercher par nom d'utilisateur</mat-label>
+        <input matInput formControlName="q" placeholder="Tapez le nom d'utilisateur..." />
+        <mat-icon matPrefix>search</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="role-filter">
+        <mat-label>Filtrer par rôle</mat-label>
+        <mat-select formControlName="role">
+          <mat-option value="All">Tous les rôles</mat-option>
+          <mat-option value="Client">Client</mat-option>
+          <mat-option value="Artisan">Artisan</mat-option>
+          <mat-option value="DeliveryPartner">Delivery Partner</mat-option>
+          <mat-option value="Admin">Admin</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="status-filter">
+        <mat-label>Filtrer par statut</mat-label>
+        <mat-select formControlName="status">
+          <mat-option value="All">Tous les statuts</mat-option>
+          <mat-option value="Active">Actifs</mat-option>
+          <mat-option value="Inactive">Inactifs</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-stroked-button (click)="clearFilters()" type="button">
+        <mat-icon>clear</mat-icon>
+        Effacer les filtres
+      </button>
+    </form>
+  </div>
+
+  <!-- Section de résultats -->
+  <div class="section">
+    <h3>
+      Utilisateurs trouvés 
+      <span class="count">({{ filtered.length }} / {{ users.length }})</span>
+    </h3>
+
+    <div class="table" *ngIf="filtered.length > 0; else noResults">
+      <div class="table-header">
+        <div class="col-id">ID</div>
+        <div class="col-username">Username</div>
+        <div class="col-role">Rôle</div>
+        <div class="col-status">Statut</div>
+        <div class="col-actions">Actions</div>
+      </div>
+      
+      <div class="table-row" *ngFor="let u of filtered; trackBy: trackByUserId">
+        <div class="col-id">{{ u.id }}</div>
+        <div class="col-username">
+          <strong [class.inactive-user]="!u.isActive && u.username !== me">{{ u.username }}</strong>
+          <span class="me-badge" *ngIf="u.username === me">
+            (Vous)
+            <span *ngIf="!u.isActive" class="error-indicator">⚠️ INACTIF</span>
+          </span>
+        </div>
+        <div class="col-role">
+          <span class="role-badge" [ngClass]="'role-' + u.role.toLowerCase()">
+            {{ u.role }}
+          </span>
+        </div>
+        <div class="col-status">
+          <span class="status-badge" [ngClass]="u.isActive ? 'status-active' : 'status-inactive'">
+            <mat-icon>{{ u.isActive ? 'check_circle' : 'block' }}</mat-icon>
+            {{ u.isActive ? 'Actif' : 'Inactif' }}
+          </span>
+        </div>
+        <div class="col-actions">
+          <button 
+            mat-stroked-button 
+            [color]="u.isActive ? 'warn' : 'primary'"
+            (click)="toggleUserStatus(u)"
+            [disabled]="u.username === me"
+            [matTooltip]="u.username === me ? 'Vous ne pouvez pas vous désactiver' : (u.isActive ? 'Désactiver cet utilisateur' : 'Activer cet utilisateur')">
+            <mat-icon>{{ u.isActive ? 'block' : 'check_circle' }}</mat-icon>
+            {{ u.isActive ? 'Désactiver' : 'Activer' }}
+          </button>
+
+          <button 
+            mat-stroked-button 
+            color="warn" 
+            (click)="remove(u)"
+            [disabled]="u.username === me"
+            [matTooltip]="u.username === me ? 'Vous ne pouvez pas vous supprimer' : 'Supprimer définitivement cet utilisateur'">
+            <mat-icon>delete</mat-icon>
+            Supprimer
+          </button>
+        </div>
       </div>
     </div>
+
+    <ng-template #noResults>
+      <div class="no-results">
+        <mat-icon>search_off</mat-icon>
+        <p>Aucun utilisateur ne correspond à vos critères de recherche.</p>
+        <button mat-button (click)="clearFilters()">Effacer les filtres</button>
+      </div>
+    </ng-template>
   </div>
-</mat-card>

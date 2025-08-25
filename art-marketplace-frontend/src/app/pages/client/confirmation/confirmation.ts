@@ -3,6 +3,8 @@ import { CurrencyPipe, NgFor, NgIf } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
+import { MaterialModule } from "../../../material.module";
+import { MatIconModule } from '@angular/material/icon';
 
 type CheckoutLine = { id: number; title: string; qty: number; price: number };
 type CheckoutSummary = {
@@ -11,6 +13,9 @@ type CheckoutSummary = {
   items: CheckoutLine[];
   orderIds?: number[];
   ts: string;
+  paymentResult?: any;
+  deliveryOption?: string;
+  deliveryPrice?: number;
 };
 
 @Component({
@@ -18,7 +23,7 @@ type CheckoutSummary = {
   selector: 'app-order-confirmation',
   templateUrl: './confirmation.html',
   styleUrls: ['./confirmation.scss'],
-  imports: [NgIf, NgFor, CurrencyPipe, MatCardModule, MatButtonModule, RouterLink]
+  imports: [NgIf, NgFor, CurrencyPipe, MatIconModule, MatCardModule, MatButtonModule, RouterLink, MaterialModule]
 })
 export class OrderConfirmationComponent implements OnInit {
   private router = inject(Router);

@@ -1,0 +1,148 @@
+<mat-card class="payment-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>payment</mat-icon>
+          Paiement sécurisé
+        </mat-card-title>
+        <mat-card-subtitle>
+          Sous-total : {{ amount | currency:'EUR':'symbol-narrow' }}<br>
+          <span *ngIf="selectedDeliveryOption">
+            Livraison : {{ selectedDeliveryOption.price | currency:'EUR':'symbol-narrow' }}<br>
+            <strong>Total : {{ getTotalAmount() | currency:'EUR':'symbol-narrow' }}</strong>
+          </span>
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <form [formGroup]="paymentForm" (ngSubmit)="onSubmit()">
+          
+          <!-- ✅ Section Options de livraison -->
+          <div class="delivery-section">
+            <h4>
+              <mat-icon>local_shipping</mat-icon>
+              Options de livraison
+            </h4>
+            
+            <mat-radio-group formControlName="deliveryOption" class="delivery-options">
+              <div *ngFor="let option of paymentService.deliveryOptions" 
+                   class="delivery-option"
+                   [class.selected]="selectedDeliveryId === option.id">
+                <mat-radio-button [value]="option.id">
+                  <div class="option-content">
+                    <div class="option-header">
+                      <mat-icon>{{ option.icon }}</mat-icon>
+                      <span class="option-title">{{ option.label }}</span>
+                      <span class="option-price">{{ option.price | currency:'EUR':'symbol-narrow' }}</span>
+                    </div>
+                    <div class="option-details">
+                      <p class="description">{{ option.description }}</p>
+                      <p class="estimated-time">{{ option.estimatedDays }}</p>
+                    </div>
+                  </div>
+                </mat-radio-button>
+              </div>
+            </mat-radio-group>
+          </div>
+
+          <!-- Sélection méthode de paiement -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Méthode de paiement</mat-label>
+            <mat-select formControlName="method" (selectionChange)="onMethodChange()">
+              <mat-option *ngFor="let method of paymentService.methods" [value]="method.id">
+                <mat-icon>{{ method.icon }}</mat-icon>
+                {{ method.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Formulaire carte bancaire -->
+          <div *ngIf="selectedMethod === 'card'" class="card-form">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Numéro de carte</mat-label>
+              <input matInput formControlName="cardNumber" 
+                     placeholder="1234 5678 9012 3456" 
+                     maxlength="19"
+                     (input)="formatCardNumber($event)">
+              <mat-icon matSuffix>credit_card</mat-icon>
+            </mat-form-field>
+
+            <div class="card-row">
+              <mat-form-field appearance="outline">
+                <mat-label>MM/YY</mat-label>
+                <input matInput formControlName="cardExpiry" 
+                       placeholder="12/25" 
+                       maxlength="5"
+                       (input)="formatExpiry($event)">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>CVC</mat-label>
+                <input matInput formControlName="cardCvc" 
+                       placeholder="123" 
+                       maxlength="4"
+                       type="password">
+                <mat-icon matSuffix>security</mat-icon>
+              </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Nom sur la carte</mat-label>
+              <input matInput formControlName="cardName" 
+                     placeholder="Jean Dupont">
+            </mat-form-field>
+          </div>
+
+          <!-- Formulaire PayPal -->
+          <div *ngIf="selectedMethod === 'paypal'" class="paypal-form">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Email PayPal</mat-label>
+              <input matInput formControlName="email" 
+                     type="email"
+                     placeholder="votre-email@example.com">
+              <mat-icon matSuffix>email</mat-icon>
+            </mat-form-field>
+            
+            <div class="paypal-info">
+              <mat-icon>info</mat-icon>
+              <p>Vous serez redirigé vers PayPal pour finaliser le paiement</p>
+            </div>
+          </div>
+
+          <!-- Virement bancaire -->
+          <div *ngIf="selectedMethod === 'bank'" class="bank-form">
+            <div class="bank-info">
+              <mat-icon>info</mat-icon>
+              <p>
+                <strong>Coordonnées bancaires :</strong><br>
+                IBAN : FR76 1234 5678 9012 3456 7890 123<br>
+                BIC : EXAMPLEXXX<br>
+                Référence : {{ generateReference() }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Erreurs de validation -->
+          <div *ngIf="validationErrors.length > 0" class="errors">
+            <mat-icon color="warn">error</mat-icon>
+            <ul>
+              <li *ngFor="let error of validationErrors">{{ error }}</li>
+            </ul>
+          </div>
+        </form>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <button mat-button (click)="onCancel()" [disabled]="processing">
+          Annuler
+        </button>
+        
+        <button mat-raised-button 
+                color="primary" 
+                (click)="onSubmit()"
+                [disabled]="!paymentForm.valid || processing">
+          <mat-spinner diameter="20" *ngIf="processing"></mat-spinner>
+          <mat-icon *ngIf="!processing">payment</mat-icon>
+          {{ processing ? 'Traitement...' : 'Payer ' + (getTotalAmount() | currency:'EUR':'symbol-narrow') }}
+        </button>
+      </mat-card-actions>
+    </mat-card>

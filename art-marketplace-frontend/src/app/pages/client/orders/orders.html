@@ -1,17 +1,70 @@
 <div class="container">
   <h2>Mes commandes</h2>
-  <p *ngIf="loading">Chargement…</p>
-  <p *ngIf="!loading && error">{{ error }}</p>
-  <p *ngIf="!loading && !error && orders.length === 0">Aucune commande.</p>
 
-  <div class="list" *ngIf="!loading && !error && orders.length">
-    <mat-card *ngFor="let o of orders" class="item">
-      <mat-card-title>#{{ o.id }} — {{ o.status }}</mat-card-title>
+  <div *ngIf="loading" class="loading">
+    <mat-progress-spinner diameter="40"></mat-progress-spinner>
+    <p>Chargement de vos commandes...</p>
+  </div>
+
+  <p *ngIf="!loading && error" class="error">{{ error }}</p>
+
+  <div *ngIf="!loading && !error && orders.length === 0" class="empty">
+    <mat-icon>shopping_cart</mat-icon>
+    <p>Aucune commande pour le moment.</p>
+  </div>
+
+  <div class="orders-grid" *ngIf="!loading && !error && orders.length > 0">
+    <mat-card *ngFor="let order of orders" class="order-card">
+      <mat-card-header>
+        <mat-card-title>Commande #{{ order.id }}</mat-card-title>
+        <mat-card-subtitle>
+          <span class="status-badge" [ngClass]="getStatusClass(order.status)">
+            {{ order.status }}
+          </span>
+        </mat-card-subtitle>
+      </mat-card-header>
+
       <mat-card-content>
-        <p>Produit: {{ o.productId }}</p>
-        <p>Artisan: {{ o.artisanId }}</p>
-        <p>Date: {{ o.orderDate | date:'short' }}</p>
+        <div class="order-content">
+          <div class="product-image">
+            <img 
+              *ngIf="order.productImage"
+              [src]="order.productImage" 
+              [alt]="order.productTitle || 'Produit'"
+              (error)="onImageError($event)"
+              loading="lazy"
+            />
+            <div *ngIf="!order.productImage" class="no-image">
+              <mat-icon>shopping_bag</mat-icon>
+            </div>
+          </div>
+
+          <div class="order-details">
+            <h3 class="product-title">
+              {{ order.productTitle || 'Produit #' + order.productId }}
+            </h3>
+            
+            <p class="product-price" *ngIf="order.productPrice">
+              {{ order.productPrice | currency:'EUR':'symbol-narrow' }}
+            </p>
+            
+            <div class="order-info">
+              <p><strong>Artisan:</strong> #{{ order.artisanId }}</p>
+              <p><strong>Date:</strong> {{ order.orderDate | date:'dd/MM/yyyy à HH:mm' }}</p>
+              <p *ngIf="order.productDescription" class="product-description">
+                {{ order.productDescription }}
+              </p>
+            </div>
+          </div>
+        </div>
       </mat-card-content>
+
+      <mat-card-actions>
+        <button mat-stroked-button [routerLink]="['/products', order.productId]">
+          <mat-icon>visibility</mat-icon>
+          Voir le produit
+        </button>
+      </mat-card-actions>
     </mat-card>
   </div>
 </div>

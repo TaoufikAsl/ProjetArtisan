@@ -9,6 +9,8 @@
         public string? Comment { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+        public string? ArtisanResponse { get; set; }
+        public DateTime? ArtisanResponseDate { get; set; }
         public Product? Product { get; set; }
         public User? Client { get; set; }
     }

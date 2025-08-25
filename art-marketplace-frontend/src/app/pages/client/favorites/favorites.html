@@ -1,0 +1,53 @@
+<mat-card class="fav-page">
+  <h2>Mes favoris</h2>
+
+  <!-- ✅ Indicateur de chargement -->
+  <div *ngIf="loading" class="loading">
+    <mat-progress-spinner diameter="40"></mat-progress-spinner>
+    <p>Chargement de vos favoris...</p>
+  </div>
+
+  <!-- ✅ Message d'erreur -->
+  <p *ngIf="!loading && error" class="error">{{ error }}</p>
+
+  <!-- ✅ Message vide -->
+  <p *ngIf="!loading && !error && favoriteProducts.length === 0" class="empty">
+    Vous n'avez encore aucun favori.
+    <a routerLink="/products">Parcourir le catalogue</a>
+  </p>
+
+  <!-- ✅ Grille des produits favoris avec images -->
+  <div class="grid" *ngIf="!loading && !error && favoriteProducts.length > 0">
+    <mat-card class="product-card" *ngFor="let product of favoriteProducts; trackBy: trackByPid">
+      <!-- ✅ Image du produit -->
+      <div class="product-image">
+        <img 
+          [src]="product.imageUrl || 'assets/placeholder.png'" 
+          [alt]="product.title"
+          (error)="onImageError($event)"
+          loading="lazy"
+        />
+      </div>
+
+      <mat-card-content>
+        <mat-card-title>{{ product.title }}</mat-card-title>
+        <p class="price">{{ product.price | currency:'EUR':'symbol-narrow' }}</p>
+        <p class="description">{{ product.description || '—' }}</p>
+      </mat-card-content>
+
+      <mat-card-actions>
+        <a mat-raised-button color="primary" [routerLink]="['/products', product.id]">
+          <mat-icon>visibility</mat-icon>
+          Voir le produit
+        </a>
+
+        <button mat-icon-button (click)="remove(product.id)" 
+                aria-label="Retirer des favoris" 
+                title="Retirer des favoris"
+                color="warn">
+          <mat-icon>favorite</mat-icon>
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</mat-card>

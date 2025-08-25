@@ -1,62 +1,147 @@
 <div class="wrapper">
   <h2>Catalogue</h2>
 
-  <!-- Filtres -->
-  <mat-card class="filters">
-    <form [formGroup]="form" class="row">
-      <mat-form-field appearance="outline" class="q">
-        <mat-label>Rechercher</mat-label>
-        <input matInput formControlName="q" placeholder="Titre ou description" />
-      </mat-form-field>
+  <form [formGroup]="form" class="filters">
+    <mat-form-field>
+      <mat-label>Recherche</mat-label>
+      <input matInput formControlName="q" placeholder="Titre, description…">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
 
-      <mat-form-field appearance="outline" class="num">
-        <mat-label>Prix min</mat-label>
-        <input matInput type="number" formControlName="minPrice" />
-      </mat-form-field>
+    <!-- Filtre catégorie -->
+    <mat-form-field>
+      <mat-label>Catégorie</mat-label>
+      <mat-select formControlName="category">
+        <mat-option value="">Toutes les catégories</mat-option>
+        <mat-option *ngFor="let category of categories" [value]="category">
+          {{ category }}
+        </mat-option>
+      </mat-select>
+      <mat-icon matSuffix>category</mat-icon>
+    </mat-form-field>
 
-      <mat-form-field appearance="outline" class="num">
-        <mat-label>Prix max</mat-label>
-        <input matInput type="number" formControlName="maxPrice" />
-      </mat-form-field>
+    <!-- ✅ Nouveau filtre artisan -->
+    <mat-form-field>
+      <mat-label>Artisan</mat-label>
+      <mat-select formControlName="artisanId">
+        <mat-option value="">Tous les artisans</mat-option>
+        <mat-option *ngFor="let artisan of artisans" [value]="artisan.id">
+          {{ artisan.username }}
+        </mat-option>
+      </mat-select>
+      <mat-icon matSuffix>person</mat-icon>
+    </mat-form-field>
 
-      <mat-form-field appearance="outline" class="sort">
-        <mat-label>Trier par</mat-label>
-        <mat-select formControlName="sort">
-          <mat-option value="recent">Récents</mat-option>
-          <mat-option value="priceAsc">Prix ↑</mat-option>
-          <mat-option value="priceDesc">Prix ↓</mat-option>
-        </mat-select>
-      </mat-form-field>
-    </form>
-  </mat-card>
+    <mat-form-field>
+      <mat-label>Prix min</mat-label>
+      <input matInput type="number" formControlName="minPrice" min="0" step="0.01">
+      <mat-icon matSuffix>euro</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Prix max</mat-label>
+      <input matInput type="number" formControlName="maxPrice" min="0" step="0.01">
+      <mat-icon matSuffix>euro</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Trier</mat-label>
+      <mat-select formControlName="sort">
+        <mat-option value="recent">Plus récents</mat-option>
+        <mat-option value="priceAsc">Prix ↑</mat-option>
+        <mat-option value="priceDesc">Prix ↓</mat-option>
+      </mat-select>
+      <mat-icon matSuffix>sort</mat-icon>
+    </mat-form-field>
+
+    <button mat-stroked-button 
+            type="button"
+            (click)="clearFilters()"
+            class="clear-btn">
+      <mat-icon>clear</mat-icon>
+      Effacer
+    </button>
+  </form>
 
   <!-- Loading -->
   <div class="center" *ngIf="loading">
-    <mat-spinner diameter="40"></mat-spinner>
+    <mat-progress-spinner diameter="40"></mat-progress-spinner>
+    <p>Chargement...</p>
   </div>
 
   <!-- Erreur -->
-  <p class="error" *ngIf="!loading && error">{{ error }}</p>
+  <div class="error" *ngIf="!loading && error">
+    <mat-icon>error</mat-icon>
+    <p>{{ error }}</p>
+    <button mat-raised-button color="primary" (click)="clearFilters()">
+      Réessayer
+    </button>
+  </div>
 
-  <!-- Liste produits -->
-  <ng-container *ngIf="!loading && !error">
-    <div class="grid" *ngIf="products.length; else noneTpl">
+  <!-- Aucun résultat -->
+  <div class="no-results" *ngIf="!loading && !error && products.length === 0">
+    <mat-icon>search_off</mat-icon>
+    <h3>Aucun produit trouvé</h3>
+    <p>Essayez de modifier vos critères de recherche</p>
+    <button mat-raised-button color="primary" (click)="clearFilters()">
+      Voir tous les produits
+    </button>
+  </div>
+
+  <!-- Produits -->
+  <div *ngIf="!loading && !error && products.length > 0">
+    <p class="results-count">{{ products.length }} produit(s) trouvé(s)</p>
+
+    <div class="grid">
       <mat-card class="product" *ngFor="let p of products; trackBy: trackById">
-        <img mat-card-image [src]="p.imageUrl || 'assets/placeholder.png'" [alt]="p.title">
+        <div class="thumb">
+          <img *ngIf="p.imageUrl" [src]="p.imageUrl" (error)="onImageError($event)" [alt]="p.title" />
+          
+          <div class="category-badge" *ngIf="p.category">
+            {{ p.category }}
+          </div>
+          
+          <button
+              mat-icon-button
+              class="fav-btn"
+              type="button"
+              (click)="$event.stopPropagation(); toggleFav(p)"
+              [color]="isFav(p) ? 'warn' : undefined"
+              [title]="isFav(p) ? 'Retirer des favoris' : 'Ajouter aux favoris'">
+            <mat-icon>{{ isFav(p) ? 'favorite' : 'favorite_border' }}</mat-icon>
+          </button>
+        </div>
+
         <mat-card-title>{{ p.title }}</mat-card-title>
         <mat-card-content>
           <p class="price">{{ p.price | currency:'EUR':'symbol-narrow' }}</p>
+          
+          <!-- ✅ Afficher l'artisan dans le produit -->
+          <mat-chip-set class="info-chips">
+            <mat-chip *ngIf="p.category" class="category-chip">
+              <mat-icon>category</mat-icon>
+              {{ p.category }}
+            </mat-chip>
+            <mat-chip *ngIf="p.artisan" class="artisan-chip" (click)="onArtisanChange(p.artisan!.id)">
+              <mat-icon>person</mat-icon>
+              {{ p.artisan.username }}
+            </mat-chip>
+          </mat-chip-set>
+          
           <p class="desc">{{ p.description || '—' }}</p>
         </mat-card-content>
+
         <mat-card-actions>
-          <button mat-stroked-button (click)="open(p)">Voir</button>
-          <button mat-raised-button color="primary" (click)="addToCart(p)">Ajouter au panier</button>
+          <button mat-button color="primary" (click)="open(p)">
+            <mat-icon>visibility</mat-icon>
+            Voir
+          </button>
+          <button mat-stroked-button color="primary" (click)="addToCart(p)">
+            <mat-icon>add_shopping_cart</mat-icon>
+            Ajouter
+          </button>
         </mat-card-actions>
       </mat-card>
     </div>
-
-    <ng-template #noneTpl>
-      <p style="padding:12px">Aucun produit ne correspond à votre recherche.</p>
-    </ng-template>
-  </ng-container>
+  </div>
 </div>

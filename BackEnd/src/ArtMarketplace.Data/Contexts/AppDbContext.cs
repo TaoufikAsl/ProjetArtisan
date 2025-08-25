@@ -11,6 +11,7 @@ namespace ArtMarketplace.Data.Contexts
         public DbSet<Product> Products => Set<Product>();
         public DbSet<Order> Orders => Set<Order>();
         public DbSet<Review> Reviews => Set<Review>();
+        public DbSet<Favorite> Favorites => Set<Favorite>();
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -56,6 +57,23 @@ namespace ArtMarketplace.Data.Contexts
                     .HasForeignKey(r => r.ClientId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
+
+            //Favorites 
+            modelBuilder.Entity<Favorite>()
+                .HasIndex(f => new { f.ClientId, f.ProductId })
+                .IsUnique();
+
+            modelBuilder.Entity<Favorite>()
+                .HasOne(f => f.Product)
+                .WithMany()
+                .HasForeignKey(f => f.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Favorite>()
+                .HasOne(f => f.Client)
+                .WithMany()
+                .HasForeignKey(f => f.ClientId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

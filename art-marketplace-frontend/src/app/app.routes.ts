@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard, guestGuard } from './auth.guard';
 import { roleGuard } from './role.guard';
 
+
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
 
@@ -65,6 +66,14 @@ export const routes: Routes = [
     data: { role: 'Client' },
     loadComponent: () => import('./pages/client/orders/orders').then(m => m.ClientOrdersComponent)
   },
+  //Favoris
+  {
+  path: 'favorites',
+  canActivate: [roleGuard],
+  data: { role: 'Client' },
+  loadComponent: () => import('./pages/client/favorites/favorites').then(m => m.FavoritesComponent)
+},
+
 
   {
   path: 'order/confirmation',
